@@ -85,8 +85,8 @@ def symTriONMF_coordinate_descent(X,r, maxiter):
                     if (j == i):
                         continue
                     l = np.argmax(W[j, :])  # l'élément non nul
-                    b += (S[k, l] * W[j, l]) ** 2
-                    c += -2 * X[i, j] * S[k, l] * W[j, l]
+                    b += 2*(S[k, l] * W[j, l]) ** 2
+                    c += -4 * X[i, j] * S[k, l] * W[j, l]
                 x, value_x = min_degre4(a, b, c)
                 if value_x < sum_value:
                     k_min = k
@@ -97,8 +97,6 @@ def symTriONMF_coordinate_descent(X,r, maxiter):
         erreur_prec = erreur
         erreur = calcul_erreur(X, W, S)
         print("W "+str(erreur))
-        print(S)
-        print(W)
 
         # optimisation de S
 
@@ -122,8 +120,7 @@ def symTriONMF_coordinate_descent(X,r, maxiter):
         erreur_prec = erreur
         erreur = calcul_erreur(X, W, S)
         print("error_S "+str(erreur))
-        print(S)
-        print(W)
+
 
     return W, S, erreur
 
@@ -132,21 +129,20 @@ def symTriONMF_coordinate_descent(X,r, maxiter):
 if __name__ == '__main__':
 
     # création matrice
-    n = 3
-    r = 2
-    # W = np.zeros((n, r))
-    # for i in range(n):
-    #     k = np.random.randint(r)
-    #     W[i, k] = np.random.rand()
-    # matrice_aleatoire = np.random.rand(r, r)
-    # S = 0.5 * (matrice_aleatoire + matrice_aleatoire.T)
-    W=[[0,1],[1,0],[0,1]]
-    S=[[2,4],[3,1]]
+    n = 20
+    r = 5
+    W = np.zeros((n, r))
+    for i in range(n):
+        k = np.random.randint(r)
+        W[i, k] = np.random.rand()
+    matrice_aleatoire = np.random.rand(r, r)
+    S = 0.5 * (matrice_aleatoire + matrice_aleatoire.T)
+
     X = np.dot(W, np.dot(S, np.transpose(W)))
     print(X)
 
     # algorithme :
-    W, S, erreur = symTriONMF_coordinate_descent(X,r, maxiter=5)
+    W, S, erreur = symTriONMF_coordinate_descent(X,r, maxiter=1000)
     print(X)
     print(W)
     print(S)
