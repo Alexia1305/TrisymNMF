@@ -92,27 +92,33 @@ for level in 1:nbr_level
     result2[level,3]=error2
 
 end 
-plot(epsilon, result[:,1],label="coordinate_descent", xlabel="epsilon", ylabel="accuracy", title="Evolution of the accuracy a function of epsilon",ylim=(0.5, 1))
-scatter!(epsilon, result[:,1],label="coordinate_descent")
-plot!(epsilon, result2[:,1],label="update_rules")
-scatter!(epsilon, result2[:,1],label="update_rules")
+plot(epsilon, result[:,1],label="coordinate_descent", xlabel="epsilon", ylabel="accuracy", title="Evolution of the accuracy a function of epsilon",ylim=(0.5, 1),linecolor=:blue)
+scatter!(epsilon, result[:,1],label="",markercolor=:blue)
+plot!(epsilon, result2[:,1],label="update_rules",linecolor=:red)
+scatter!(epsilon, result2[:,1],label="",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure.png")
 
-plot(epsilon, result[:,2],label="coordinate_descent", xlabel="epsilon", ylabel="time [s]", title="Evolution of the resolution time a function of epsilon")
-scatter!(epsilon, result[:,2],label="coordinate_descent")
-plot!(epsilon, result2[:,2],label="update_rules")
-scatter!(epsilon, result2[:,2],label="update_rules")
+plot(epsilon, result[:,2],label="coordinate_descent", xlabel="epsilon", ylabel="time [s]", title="Evolution of the resolution time a function of epsilon",linecolor=:blue)
+scatter!(epsilon, result[:,2],label="coordinate_descent",markercolor=:blue)
+plot!(epsilon, result2[:,2],label="update_rules",linecolor=:red)
+scatter!(epsilon, result2[:,2],label="update_rules",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure2.png")
 
 
-plot(epsilon, result[:,3],label="coordinate_descent", xlabel="epsilon", ylabel="relative error", title="Evolution of the relative error as a function of epsilon",ylim=(0,:auto))
-scatter!(epsilon, result[:,3],label="coordinate_descent")
-plot!(epsilon, result2[:,3],label="update_rules")
-scatter!(epsilon, result2[:,3],label="update_rules")
+plot(epsilon, result[:,3],label="coordinate_descent", xlabel="epsilon", ylabel="relative error", title="Evolution of the relative error as a function of epsilon",ylim=(0,:auto),linecolor=:blue)
+scatter!(epsilon, result[:,3],label="coordinate_descent",markercolor=:blue)
+plot!(epsilon, result2[:,3],label="update_rules",linecolor=:red)
+scatter!(epsilon, result2[:,3],label="update_rules",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure3.png")
+
+# Nom du fichier
+nom_fichier = "noise_kmeans.txt"
+
+# Écriture des données dans le fichier
+writedlm(nom_fichier, [epsilon result result2], ',')
