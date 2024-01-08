@@ -5,7 +5,7 @@ using SparseArrays
 nbr_level=10
 n=100
 const rin=5
-epsilon=collect(range(0, stop=1, length=nbr_level))
+epsilon=collect(range(0, stop=2, length=nbr_level))
 result=zeros(length(epsilon), 3)
 result2=zeros(length(epsilon), 3)
 for level in 1:nbr_level
@@ -38,7 +38,7 @@ for level in 1:nbr_level
             W_true2[:, j] .= W_true2[:, j] ./ norm(W_true2[:, j],2)
         end
         # Densité de la matrice (proportion d'éléments non nuls)
-        density = 0.4
+        density = 0.2
         
         # Générer une matrice sparse aléatoire
         random_sparse_matrix = sprand(r, r, density)
@@ -53,7 +53,7 @@ for level in 1:nbr_level
         #ajout du bruit 
         if epsilon[level] != 0 
             N = randn(n,n); 
-            N = epsilon[level] * N/norm(N)*norm(X);  
+            N = epsilon[level] * (N/norm(N))*norm(X);  
             X=X+N
             X=max.(X, 0) # pas de vaelurs négatives 
         end 
@@ -92,7 +92,7 @@ for level in 1:nbr_level
     result2[level,3]=error2
 
 end 
-plot(epsilon, result[:,1],label="coordinate_descent", xlabel="epsilon", ylabel="accuracy", title="Evolution of the accuracy a function of epsilon",ylim=(0, :auto))
+plot(epsilon, result[:,1],label="coordinate_descent", xlabel="epsilon", ylabel="accuracy", title="Evolution of the accuracy a function of epsilon",ylim=(0.5, 1))
 scatter!(epsilon, result[:,1],label="coordinate_descent")
 plot!(epsilon, result2[:,1],label="update_rules")
 scatter!(epsilon, result2[:,1],label="update_rules")

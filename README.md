@@ -4,7 +4,7 @@
 \min_{W \geq 0, S \geq 0} \|X - WSW^T\|_F^2 \quad \text{s.t.} \quad W^TW = I
 \]
 
-# Algorithme de descente en coordonnées en Julia : algo_symTriONMF.jl 
+# Algorithme de descente de coordonnées en Julia : algo_symTriONMF.jl 
 
 - `symTriONMF_coordinate_descent(X, r, maxiter, epsi, init_kmeans)`
 
