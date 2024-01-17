@@ -93,6 +93,7 @@ function calcul_accuracy(W_true,W_find)
 end 
 
 function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_kmeans)
+    debut = time()
     if init_kmeans == false 
         # initialisation aléatoire
         n = size(X, 1)
@@ -106,7 +107,7 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_kmeans)
         S = 0.5 * (matrice_aleatoire + transpose(matrice_aleatoire))
     else 
         # initialisation kmeans 
-        R=kmeans(X',r,maxiter=Int(ceil(maxiter*0.05)))
+        R=kmeans(X',r,maxiter=Int(ceil(maxiter*0.03)))
         a = assignments(R)  
         n = size(X, 1)
         W = zeros(n, r)
@@ -145,6 +146,17 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_kmeans)
     
 
     for itter in 1:maxiter
+        # Calculer le temps écoulé
+        temps_ecoule = time() - debut
+
+        
+
+        # Vérifier si le temps écoulé est inférieur à la limite
+        if temps_ecoule > 1
+           
+            println("Limite de temps dépassée.")
+            break
+        end
         # optimisation de W
         for i in 1:n
             k_min = nothing
@@ -231,10 +243,13 @@ end
 function symTriONMF_update_rules(X, r, maxiter,epsi,init_kmeans)
 
     #Orthogonal Nonnegative Matrix Tri-factorizations for Clustering
+     # Initialiser le temps de début
+    debut = time()
     if init_kmeans == false 
         # initialisation aléatoire
         n = size(X, 1)
-        W = zeros(n, r)
+        eps_machine=1e-5
+        W = fill(eps_machine, (n,r))
         for i in 1:n
             k = rand(1:r)
             W[i, k] = rand()
@@ -244,38 +259,22 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_kmeans)
         S = 0.5 * (matrice_aleatoire + transpose(matrice_aleatoire))
     else 
         # initialisation kmeans 
-        R=kmeans(X',r,maxiter=Int(ceil(maxiter*0.05)))
+        R=kmeans(X',r,maxiter=Int(ceil(maxiter*0.03)))
         a = assignments(R)  
         n = size(X, 1)
-        W = zeros(n, r)
+        eps_machine=eps(Float64)
+        W = fill(eps_machine, (n,r))
         for i in 1:n
             W[i, a[i]] = 1
         end
         matrice_aleatoire = rand(r, r)
         S = 0.5 * (matrice_aleatoire + transpose(matrice_aleatoire))
         #optimisation de S
-         # optimisation de S
-         for k in 1:r
-            for l in 1:r  # symétrique
-                a = 0
-                b = 0
-                ind_i = findall(W[:, k] .> 0)
-                if isempty(ind_i)
-                    break
-                end
-                ind_j = findall(W[:, l] .> 0)
-                if isempty(ind_j)
-                    break
-                end
-                for i in ind_i
-                    for j in ind_j
-                        a += (W[i, k] * W[j, l]) ^ 2
-                        b += 2 * X[i, j] * W[i, k] * W[j, l]
-                    end
-                end
-                S[k, l] = max(b / (2 * a), 0)
-            end
-        end
+        # optimisation de S
+        WtW=W'*W
+        S.=S.*real(sqrt.(Complex.((W'*X*W)./(WtW*S*WtW))))
+         
+        
 
     end 
     erreur_prec = calcul_erreur(X, W, S)
@@ -283,33 +282,32 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_kmeans)
     
 
     for itter in 1:maxiter
-        # optimisation de W
-        for i in 1:n
-            for k in 1:r
-                num=X'*W*S
-                den=W*W'*X'*W*S
-                if den[i,k]== 0
-                    continue
-                end
-                W[i,k]*=sqrt(num[i,k]/den[i,k])
+        # Calculer le temps écoulé
+        temps_ecoule = time() - debut
 
-            end
+        
+
+        # Vérifier si le temps écoulé est inférieur à la limite
+        if temps_ecoule > 1
+           
+            println("Limite de temps dépassée.")
+            break
         end
+        
+        # optimisation de W
+        # Calcul de XtWS
+        XtWS = X' * (W * S)
+
+        # Calcul de la mise à jour de W
+        W .= W .* real(sqrt.(Complex.(XtWS ./ (W * (W' * XtWS)))))
 
        
         
 
         # optimisation de S
-        for k in 1:r
-            for l in 1:r  # symétrique
-                num=W'*X*W
-                den=W'*W*S*W'*W
-                if den[k,l]== 0
-                    continue
-                end
-                S[k,l]*=sqrt(num[k,l]/den[k,l])
-            end
-        end
+        WtW=W'*W
+        S.=S.*real(sqrt.(Complex.((W'*X*W)./(WtW*S*WtW))))
+       
 
         erreur_prec = erreur
         erreur = calcul_erreur(X, W, S)
@@ -321,7 +319,13 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_kmeans)
             break
         end
     end
-
+    for i in 1:n
+        for j in 1:r 
+            if W[i,j]<=eps_machine
+                W[i,j]=0
+            end
+        end
+    end 
     for k in 1:r
         nw=norm(W[:, k],2)
         if nw==0

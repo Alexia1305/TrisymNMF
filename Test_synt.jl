@@ -5,13 +5,15 @@ gr()  # Configurer le backend GR
 using SparseArrays
 dim_n=[10,20,50,100,150,200]
 dim_r=[2,3,4,5,6,7]
-result=zeros(length(dim_n), 3)
-result2=zeros(length(dim_n), 3)
+result=zeros(length(dim_n), 4)
+result2=zeros(length(dim_n),4)
 for dim in 1:length(dim_n)
     println(dim)
     nbr_test=100
     accuracy_moy=0
     accuracy_moy2=0
+    succes=0
+    succes2=0
     time1=0
     time2=0
     error1=0
@@ -53,13 +55,22 @@ for dim in 1:length(dim_n)
         epsi=10e-5
         # algorithme :
         temps_execution_1 = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,false)
+            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,true)
         end
         temps_execution_2 = @elapsed begin
-            W2, S2, erreur2 = symTriONMF_update_rules(X, r, maxiter,epsi,false)
+            W2, S2, erreur2 = symTriONMF_update_rules(X, r, maxiter,epsi,true)
         end 
-        accuracy_moy += calcul_accuracy(W_true,W)
-        accuracy_moy2 += calcul_accuracy(W_true,W2)
+        accu1=calcul_accuracy(W_true,W)
+        accu2=calcul_accuracy(W_true,W2)
+        accuracy_moy += accu1
+        accuracy_moy2 += accu2
+        if accu1==1
+            succes+=1
+        end
+        if accu2==1
+            succes2+=1
+        end
+
         time1+=temps_execution_1
         time2+=temps_execution_2
         error1+=erreur
@@ -82,35 +93,47 @@ for dim in 1:length(dim_n)
     result2[dim,2]=time2
     result[dim,3]=error1
     result2[dim,3]=error2
+    result[dim,4]=succes/nbr_test
+    result2[dim,4]=succes2/nbr_test
 
 end 
-plot(dim_n, result[:,1],label="coordinate_descent", xlabel="n", ylabel="accuracy", title="Evolution of the accuracy a function of n and r",ylim=(0,1),linecolor=:blue)
+plot(dim_n, result[:,4],label="coordinate_descent init random", xlabel="n", ylabel="Success rate", title="Evolution of the success rate as a function of n and r",ylim=(0,1),linecolor=:blue)
+scatter!(dim_n, result[:,4],label="",markercolor=:blue)
+plot!(dim_n, result2[:,4],label="coordinate_descent init kmeans",linestyle=:dash,linecolor=:red)
+scatter!(dim_n, result2[:,4],label="",markercolor=:red)
+
+
+# Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
+savefig("figure4.png")
+
+plot(dim_n, result[:,1],label="coordinate_descent init random", xlabel="n", ylabel="accuracy mean", title="Evolution of the accuracy mean as a function of n and r",ylim=(0,1),linecolor=:blue)
 scatter!(dim_n, result[:,1],label="",markercolor=:blue)
-plot!(dim_n, result2[:,1],label="update_rules",linestyle=:dash,linecolor=:red)
+plot!(dim_n, result2[:,1],label="coordinate_descent init kmeans",linestyle=:dash,linecolor=:red)
 scatter!(dim_n, result2[:,1],label="",markercolor=:red)
+
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure.png")
 
-plot(dim_n, result[:,2],label="coordinate_descent", xlabel="n", ylabel="time [s]", title="Evolution of the resolution time a function of n and r",linecolor=:blue)
+plot(dim_n, result[:,2],label="coordinate_descent ", xlabel="n", ylabel="time [s]", title="Evolution of the resolution time a function of n and r",linecolor=:blue)
 scatter!(dim_n, result[:,2],label="",markercolor=:blue)
-plot!(dim_n, result2[:,2],label="update_rules",linestyle=:dash,linecolor=:red)
+plot!(dim_n, result2[:,2],label="multiplicative updates",linestyle=:dash,linecolor=:red)
 scatter!(dim_n, result2[:,2],label="",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure2.png")
 
 
-plot(dim_n, result[:,3],label="coordinate_descent", xlabel="n", ylabel="relative error", title="Evolution of the relative error as a function of n and r",ylim=(0,:auto),linecolor=:blue)
+plot(dim_n, result[:,3],label="coordinate_descent init random", xlabel="n", ylabel="relative error", title="Evolution of the relative error as a function of n and r",ylim=(0,:auto),linecolor=:blue)
 scatter!(dim_n, result[:,3],label="",markercolor=:blue)
-plot!(dim_n, result2[:,3],label="update_rules",linestyle=:dash,linecolor=:red)
+plot!(dim_n, result2[:,3],label="coordinate_descent init kmeans",linestyle=:dash,linecolor=:red)
 scatter!(dim_n, result2[:,3],label="",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure3.png")
 
 # Nom du fichier
-nom_fichier = "random.txt"
+nom_fichier = "random_and_kmeans.txt"
 
 # Écriture des données dans le fichier
 writedlm(nom_fichier, [dim_n dim_r result result2], ',')
