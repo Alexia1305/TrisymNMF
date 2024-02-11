@@ -320,11 +320,10 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_kmeans)
         end
     end
     for i in 1:n
-        for j in 1:r 
-            if W[i,j]<=eps_machine
-                W[i,j]=0
-            end
-        end
+        indice_max = argmax(W[i, :])
+        elem=W[i,indice_max]
+        W[i, :] .= 0
+        W[i, indice_max] = elem
     end 
     for k in 1:r
         nw=norm(W[:, k],2)
