@@ -92,7 +92,7 @@ function calcul_accuracy(W_true,W_find)
 
 end 
 
-function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_kmeans)
+function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_kmeans,time_limit=2)
     debut = time()
     if init_kmeans == false 
         # initialisation aléatoire
@@ -152,7 +152,7 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_kmeans)
         
 
         # Vérifier si le temps écoulé est inférieur à la limite
-        if temps_ecoule > 1
+        if temps_ecoule > time_limit
            
             println("Limite de temps dépassée.")
             break
@@ -288,9 +288,9 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_kmeans)
         
 
         # Vérifier si le temps écoulé est inférieur à la limite
-        if temps_ecoule > 1
+        if temps_ecoule > 2
            
-            println("Limite de temps dépassée.")
+            println("Limite de temps dépassée. mu")
             break
         end
         

@@ -1,0 +1,15 @@
+
+*.m
+*.mat
+NMF_book/nmfbook-master/ReadMe.md
+NMF_book/nmfbook-master/Matlab_doc_NMFbook.pdf
+NMF_book/nmfbook-master/LICENSE.txt
+NMF_book/nmfbook-master/examples by chapter/Chapter 7 - Separable NMF/Algorithms.txt
+NMF_book/nmfbook-master/algorithms/symmetric NMF/symNMFmex.mexw64
+NMF_book/nmfbook-master/algorithms/symmetric NMF/symNMFmex.mexa64
+NMF_book/nmfbook-master/algorithms/symmetric NMF/symNMFmex.cpp
+NMF_book/nmfbook-master/algorithms/symmetric NMF/ReadMe.txt
+NMF_book/nmfbook-master/algorithms/separable NMF/VCA/ReadMe.txt
+NMF_book/nmfbook-master/algorithms/separable NMF/SNPA/ReadMe.txt
+NMF_book/nmfbook-master/ALexandra/WSW matrix.fig
+NMF_book/nmfbook-master/ALexandra/WSW graph.fig
