@@ -1,0 +1,133 @@
+using MAT
+file_path = "dataset/classic_20.mat"
+include("../algo/algo_symTriONMF.jl")
+include("../algo/ONMF.jl")
+include("../algo/symNMF.jl")
+
+using Printf
+
+
+using LightGraphs # Charger le package LightGraphs pour manipuler les graphes
+using Plots # Charger le package Plots pour les tracés
+using LinearAlgebra
+
+using GraphPlot
+# Charger le fichier karate.mat
+mat = matread(file_path)
+X = mat["Xkl"]
+words=mat["motlk"]
+
+X=X*X'
+X=Matrix(X)
+# Rang interne de la factorisation
+r = 40
+
+# Options de symNMF (voir également loadoptions.m)
+maxiter=10000
+timelimit=60
+epsi=10e-7
+nbr_tests=20
+nbr_algo=3
+# Initialisation des tableaux pour stocker les temps et les erreurs
+temps_execution = zeros(nbr_algo,nbr_tests)
+erreurs = zeros(nbr_algo,nbr_tests)
+# Boucle pour effectuer les tests
+for i in 1:nbr_tests
+    temps_execution[1,i] = @elapsed begin
+        W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, "k_means", timelimit)
+    end
+    erreurs[1,i] = erreur
+
+    temps_execution[2,i] = @elapsed begin
+        W, H, erreur = alternatingONMF(X, r, maxiter, epsi, "k_means")
+    end
+    erreurs[2,i] = erreur
+
+    temps_execution[3,i] = @elapsed begin
+        A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init="k_means")
+    end
+    erreurs[3,i] = erreur
+end
+
+# Calcul de la moyenne et de l'écart type des temps et des erreurs
+moyenne_temps = mean(temps_execution, dims=2)
+ecart_type_temps = std(temps_execution, dims=2)
+moyenne_erreurs = mean(erreurs, dims=2)
+ecart_type_erreurs = std(erreurs, dims=2)
+# Création du graphique
+methods = ["symTriONMF", "ONMF", "SymNMF"]
+# Affichage des résultats
+for j in 1:nbr_algo
+    println("dataset calssic")
+    println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
+ 
+    println("l'erreur pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1])," ",@sprintf("%.3g", ecart_type_erreurs[j, 1]))
+end   
+# Création du graphique
+
+# Enregistrement des résultats dans un fichier texte
+nom_fichier_resultats = "resultats_Classic.txt"
+# Enregistrement des résultats dans un fichier texte
+open(nom_fichier_resultats, "w") do io
+    write(io, "Paramètres :\n")
+    write(io, "maxiter = $maxiter\n")
+    write(io, "timelimit = $timelimit\n")
+    write(io, "epsi = $epsi\n")
+    write(io, "nbr_tests = $nbr_tests\n\n")
+    write(io, "Moyennes des temps d'exécution :\n")
+    write(io, "$methods\n")
+    write(io, join(@sprintf("%.3g", x) for x in vec(moyenne_temps)) * "\n\n")
+    write(io, "Écart types des temps d'exécution :\n")
+    write(io, "$methods\n")
+    write(io, join(@sprintf("%.3g", x) for x in vec(ecart_type_temps)) * "\n\n")
+    write(io, "Moyennes des erreurs :\n")
+    write(io, "$methods\n")
+    write(io, join(@sprintf("%.3g", x) for x in vec(moyenne_erreurs)) * "\n\n")
+    write(io, "Écart types des erreurs :\n")
+    write(io, "$methods\n")
+    write(io, join(@sprintf("%.3g", x) for x in vec(ecart_type_erreurs)) * "\n")
+end
+
+scatter_plot_temps=scatter(methods, moyenne_temps[:, 1], yerr=ecart_type_temps[:, 1], label="Temps d'exécution moyen ± écart-type", xlabel="Méthode", ylabel="Temps d'exécution (s)", title="Comparaison des méthodes sur KARATE")
+scatter_plot_erreurs=scatter(methods, moyenne_erreurs[:, 1], yerr=ecart_type_erreurs[:, 1], label="Erreur moyenne ± écart-type", xlabel="Méthode", ylabel="Erreur", title="Comparaison des méthodes sur KARATE")
+savefig(scatter_plot_temps, "Classic_temps.png")
+savefig(scatter_plot_erreurs, "Classic_erreur.png")
+
+
+# classement = Vector{Vector{Any}}(undef, r)  # Crée un vecteur de r listes vides
+
+# # Initialisation des listes vides
+# for i in 1:r
+#     club = findall(W[:, i] .> 0)
+#     classement[i] = words[club]
+#     println("classement",i)
+#     println("┌───────┐")
+#     for str in classement[i]
+#         println("│ ", str, " │")
+#     end
+#     println("└───────┘")
+#     println("10 éléments les plus importants ")
+#     # Obtenir les indices qui trieraient le vecteur dans l'ordre décroissant
+#     indices_tries = sortperm(W[:,i], rev=true)
+
+#     # Prendre les 110 derniers indices
+#     indices_10_plus_grands = indices_tries[1:8]
+#     println(words[indices_10_plus_grands])
+
+# end
+
+# println( round.(S./norm(S,2); sigdigits=3))
+
+# println("erreur",erreur)
+
+# # Créer un dictionnaire contenant la matrice W
+# variables = Dict("W" => W)
+
+# # Enregistrer le fichier .mat
+# matwrite("Wt.mat", variables)
+# # Créer un dictionnaire contenant la matrice W
+# variableS= Dict("S" => S)
+
+
+# # Enregistrer le fichier .mat
+# matwrite("St.mat", variableS)

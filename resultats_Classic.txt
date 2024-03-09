@@ -1,0 +1,21 @@
+Paramètres :
+maxiter = 10000
+timelimit = 60
+epsi = 1.0e-6
+nbr_tests = 20
+
+Moyennes des temps d'exécution :
+["symTriONMF", "ONMF", "SymNMF"]
+13.60.1246.72
+
+Écart types des temps d'exécution :
+["symTriONMF", "ONMF", "SymNMF"]
+2.960.4233.04
+
+Moyennes des erreurs :
+["symTriONMF", "ONMF", "SymNMF"]
+0.3980.3520.206
+
+Écart types des erreurs :
+["symTriONMF", "ONMF", "SymNMF"]
+0.005320.006540.000367

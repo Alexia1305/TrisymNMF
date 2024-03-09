@@ -1,0 +1,4 @@
+Algorithme, Temps d'exécution (s), Erreur, maxiter, epsi
+symTriONMF_coordinate_descent, 2.2847602, 0.7243429686694199, 10000, 1.0e-6
+alternatingONMF, 3.6233559, 0.716353587817275, 10000, 1.0e-6
+SymNMF, 0.4784628, 0.7088811982992644, 10000, 1.0e-6
