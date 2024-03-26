@@ -5,7 +5,7 @@ gr()  # Configurer le backend GR
 using SparseArrays
 dim_n=[10,30,50,100,150,200]
 dim_r=[2,3,4,5,6,7]
-nbr_algo=2
+nbr_algo=3
 result=zeros(length(dim_n), 4)
 result2=zeros(length(dim_n),4)
 result3=zeros(length(dim_n),4)
@@ -60,7 +60,7 @@ for dim in 1:length(dim_n)
         end 
         if nbr_algo>=3
             temps_execution_3 = @elapsed begin
-                W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"spa")
+                W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
             end 
         end 
         
@@ -120,7 +120,7 @@ scatter!(dim_n, result2[:,4],label="",markercolor=:red)
 plot!(dim_n, result[:,4],label="coordinate_descent init random", xlabel="n", ylabel="Success rate", title="Evolution of the success rate as a function of n and r",ylim=(0,1),linecolor=:blue)
 scatter!(dim_n, result[:,4],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,4],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,4],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
     scatter!(dim_n, result3[:,4],label="",markercolor=:green)
 end 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
@@ -132,7 +132,7 @@ scatter!(dim_n, result2[:,1],label="",markercolor=:red)
 plot!(dim_n, result[:,1],label="coordinate_descent init random", xlabel="n", ylabel="accuracy mean", title="Evolution of the accuracy mean as a function of n and r",ylim=(0,1),linecolor=:blue)
 scatter!(dim_n, result[:,1],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,1],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,1],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
     scatter!(dim_n, result3[:,1],label="",markercolor=:green)
 end 
 
@@ -145,7 +145,7 @@ scatter!(dim_n, result2[:,2],label="",markercolor=:red)
 plot!(dim_n, result[:,2],label="coordinate_descent init random ", xlabel="n", ylabel="time [s]", title="Evolution of the resolution time a function of n and r",linecolor=:blue)
 scatter!(dim_n, result[:,2],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,2],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,2],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
     scatter!(dim_n, result3[:,2],label="",markercolor=:green)
 end 
 
@@ -158,7 +158,7 @@ scatter!(dim_n, result2[:,3],label="",markercolor=:red)
 plot!(dim_n, result[:,3],label="coordinate_descent init random", xlabel="n", ylabel="relative error", title="Evolution of the relative error as a function of n and r",ylim=(0,:auto),linecolor=:blue)
 scatter!(dim_n, result[:,3],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,3],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,3],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
     scatter!(dim_n, result3[:,3],label="",markercolor=:green)
 end 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)

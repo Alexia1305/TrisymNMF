@@ -192,6 +192,8 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
 
         matrice_aleatoire = rand(r, r)
         S = 0.5 * (matrice_aleatoire + transpose(matrice_aleatoire))
+        
+        
     end 
     if init_algo=="k_means"
         # initialisation kmeans 
@@ -229,7 +231,8 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
            
         end
         #OPtimisation de S
-        S=W'*X*W   
+        S=W'*X*W
+          
 
     end 
     if init_algo=="spa"
@@ -252,6 +255,36 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
         #OPtimisation de S
         S=W'*X*W 
         
+        
+    end
+    if init_algo=="sspa"
+        # Initialisation ONMF avec SSPA calcul de X=WOHO et W=HO'
+        
+        n = size(X, 1)
+        p=max(2,Int(floor(0.1*n/r)))
+        options = Dict(:average => 1) # Définissez les options avec lra = 1
+        WO,K=SSPA(X, r, p, options)
+
+        norm2x = sqrt.(sum(X.^2, dims=1))
+        Xn = X .* (1 ./ (norm2x .+ 1e-16))
+        normX2 = sum(X .^ 2)
+
+        e = Float64[]
+
+        HO = orthNNLS(X, WO, Xn)
+        W=HO'
+        for k in 1:r
+            nw=norm(W[:, k],2)
+            if nw==0
+                continue
+            end     
+            W[:, k] .= W[:, k] ./ nw
+           
+        end
+        #OPtimisation de S
+        S=W'*X*W 
+        
+
     end 
     erreur_prec = calcul_erreur(X, W, S)
    
@@ -392,6 +425,35 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_alg="k_means")
          # optimisation de S
          WtW=W'*W
          S.=S.*real(sqrt.(Complex.((W'*X*W)./(WtW*S*WtW))))
+    end 
+    if init_alg=="sspa"
+        eps_machine=eps(Float64)
+        # Initialisation ONMF avec SSPA calcul de X=WOHO et W=HO'
+        
+        n = size(X, 1)
+        p=max(2,Int(floor(0.2*n/r)))
+        options = Dict(:average => 1) # Définissez les options avec lra = 1
+        WO,K=SSPA(X, r, p, options)
+
+        norm2x = sqrt.(sum(X.^2, dims=1))
+        Xn = X .* (1 ./ (norm2x .+ 1e-16))
+        normX2 = sum(X .^ 2)
+
+        e = Float64[]
+
+        HO = orthNNLS(X, WO, Xn)
+        W=HO'
+        n = size(X, 1)
+        for i in 1:n
+            indice_max = argmax(W[i, :])
+            elem=W[i,indice_max]
+            W[i, :] .= eps_machine
+            W[i, indice_max] = elem
+        end 
+        #OPtimisation de S
+        S=W'*X*W 
+        
+
     end 
     erreur_prec = calcul_erreur(X, W, S)
     erreur = erreur_prec

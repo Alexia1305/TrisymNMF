@@ -114,5 +114,13 @@ X=W*H
 p=2
 options = Dict(:average => 1) # Définissez les options avec lra = 1
 Ws,K=SSPA(X, r, p, options)
-println(K)
+
+norm2x = sqrt.(sum(X.^2, dims=1))
+Xn = X .* (1 ./ (norm2x .+ 1e-16))
+normX2 = sum(X .^ 2)
+
+e = Float64[]
+
+H = orthNNLS(X, Ws, Xn)
+println(Ws)
 println(H)

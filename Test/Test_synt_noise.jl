@@ -80,12 +80,12 @@ for level in 1:nbr_level
         temps_execution_2 = @elapsed begin
             W2, S2, erreur2 = symTriONMF_update_rules(X, r, maxiter,epsi,"k_means")
         end 
-        # temps_execution_3 = @elapsed begin
-        #     W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"spa")
-        # end
-        # temps_execution_4 = @elapsed begin
-        #     W4, S4, erreur4 = symTriONMF_update_rules(X, r, maxiter,epsi,"spa")
-        # end 
+        temps_execution_3 = @elapsed begin
+            W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
+        end
+        temps_execution_4 = @elapsed begin
+            W4, S4, erreur4 = symTriONMF_update_rules(X, r, maxiter,epsi,"sspa")
+        end 
         
         accu1=calcul_accuracy(W_true,W)
         accu2=calcul_accuracy(W_true,W2)
@@ -101,20 +101,20 @@ for level in 1:nbr_level
         time2+=temps_execution_2
         error1+=erreur
         error2+=erreur2
-        # accu3=calcul_accuracy(W_true,W3)
-        # accuracy_moy3 += accu3
-        # if accu3==1
-        #     succes3+=1
-        # end
-        # time3+=temps_execution_3
-        # error3+=erreur3
-        # accu4=calcul_accuracy(W_true,W4)
-        # accuracy_moy4 += accu4
-        # if accu4==1
-        #     succes4+=1
-        # end
-        # time4+=temps_execution_4
-        # error4+=erreur4
+        accu3=calcul_accuracy(W_true,W3)
+        accuracy_moy3 += accu3
+        if accu3==1
+            succes3+=1
+        end
+        time3+=temps_execution_3
+        error3+=erreur3
+        accu4=calcul_accuracy(W_true,W4)
+        accuracy_moy4 += accu4
+        if accu4==1
+            succes4+=1
+        end
+        time4+=temps_execution_4
+        error4+=erreur4
     end 
     accuracy_moy/=nbr_test
     accuracy_moy2/=nbr_test
@@ -135,14 +135,14 @@ for level in 1:nbr_level
     result[level,4]=succes/nbr_test
     result2[level,4]=succes2/nbr_test
     
-    # result3[level,1]=accuracy_moy3/nbr_test
-    # result3[level,2]=time3/nbr_test
-    # result3[level,3]=error3/nbr_test
-    # result3[level,4]=succes3/nbr_test
-    # result4[level,1]=accuracy_moy4/nbr_test
-    # result4[level,2]=time4/nbr_test
-    # result4[level,3]=error4/nbr_test
-    # result4[level,4]=succes4/nbr_test
+    result3[level,1]=accuracy_moy3/nbr_test
+    result3[level,2]=time3/nbr_test
+    result3[level,3]=error3/nbr_test
+    result3[level,4]=succes3/nbr_test
+    result4[level,1]=accuracy_moy4/nbr_test
+    result4[level,2]=time4/nbr_test
+    result4[level,3]=error4/nbr_test
+    result4[level,4]=succes4/nbr_test
 end 
 plot(epsilon, result[:,4],label="coordinate_descent init k_means", xlabel="n", ylabel="Success rate", title="Evolution of the success rate as a function of n and r",linecolor=:blue)
 scatter!(epsilon, result[:,4],label="",markercolor=:blue)
@@ -150,10 +150,10 @@ scatter!(epsilon, result[:,4],label="",markercolor=:blue)
 
 plot!(epsilon, result2[:,4],label="multiplicative updates init k_means",linestyle=:dash,linecolor=:red)
 scatter!(epsilon, result2[:,4],label="",markercolor=:red)
-# plot!(epsilon, result4[:,4],label="multiplicative updates init spa",linestyle=:dash,linecolor=:purple)
-# scatter!(epsilon, result4[:,4],label="",markercolor=:purple)
-# plot!(epsilon, result3[:,4],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
-# scatter!(epsilon, result3[:,4],label="",markercolor=:green)
+plot!(epsilon, result4[:,4],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+scatter!(epsilon, result4[:,4],label="",markercolor=:purple)
+plot!(epsilon, result3[:,4],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+scatter!(epsilon, result3[:,4],label="",markercolor=:green)
 
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
@@ -163,10 +163,10 @@ scatter!(epsilon, result[:,1],label="",markercolor=:blue)
 
 plot!(epsilon, result2[:,1],label="multiplicative updates init k_means",linecolor=:red)
 scatter!(epsilon, result2[:,1],label="",markercolor=:red)
-# plot!(epsilon, result4[:,1],label="multiplicative updates init spa",linestyle=:dash,linecolor=:purple)
-# scatter!(epsilon, result4[:,1],label="",markercolor=:purple)
-# plot!(epsilon, result3[:,1],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
-# scatter!(epsilon, result3[:,1],label="",markercolor=:green)
+plot!(epsilon, result4[:,1],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+scatter!(epsilon, result4[:,1],label="",markercolor=:purple)
+plot!(epsilon, result3[:,1],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+scatter!(epsilon, result3[:,1],label="",markercolor=:green)
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure.png")
 
@@ -175,10 +175,10 @@ scatter!(epsilon, result[:,2],label="",markercolor=:blue)
 
 plot!(epsilon, result2[:,2],label="multiplicative updates init k_means",linecolor=:red)
 scatter!(epsilon, result2[:,2],label="",markercolor=:red)
-# plot!(epsilon, result4[:,2],label="multiplicative updates init spa",linestyle=:dash,linecolor=:purple)
-# scatter!(epsilon, result4[:,2],label="",markercolor=:purple)
-# plot!(epsilon, result3[:,2],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
-# scatter!(epsilon, result3[:,2],label="",markercolor=:green)
+plot!(epsilon, result4[:,2],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+scatter!(epsilon, result4[:,2],label="",markercolor=:purple)
+plot!(epsilon, result3[:,2],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+scatter!(epsilon, result3[:,2],label="",markercolor=:green)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure2.png")
@@ -189,16 +189,16 @@ scatter!(epsilon, result[:,3],label="",markercolor=:blue)
 
 plot!(epsilon, result2[:,3],label="multiplicative updates init k_means",linecolor=:red)
 scatter!(epsilon, result2[:,3],label="",markercolor=:red)
-# plot!(epsilon, result4[:,3],label="multiplicative updates init spa",linestyle=:dash,linecolor=:purple)
-# scatter!(epsilon, result4[:,3],label="",markercolor=:purple)
-# plot!(epsilon, result3[:,3],label="coordinate_descent init spa",linestyle=:dash,linecolor=:green)
-# scatter!(epsilon, result3[:,3],label="",markercolor=:green)
+plot!(epsilon, result4[:,3],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+scatter!(epsilon, result4[:,3],label="",markercolor=:purple)
+plot!(epsilon, result3[:,3],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+scatter!(epsilon, result3[:,3],label="",markercolor=:green)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure3.png")
 
 # Nom du fichier
-nom_fichier = "noise_kmeans_spa.txt"
+nom_fichier = "noise_kmeans_sSpa.txt"
 
 # Écriture des données dans le fichier
 writedlm(nom_fichier, [epsilon result result2], ',')

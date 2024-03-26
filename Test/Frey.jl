@@ -97,9 +97,9 @@ function test()
     # Affichage des résultats
     for j in 1:nbr_algo
 
-        println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
+        println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
     
-        println("l'erreur pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1])," ",@sprintf("%.3g", ecart_type_erreurs[j, 1]))
+        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]/100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]/100)," %")
     end   
     # Création du graphique
 
