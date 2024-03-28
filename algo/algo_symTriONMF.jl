@@ -3,6 +3,9 @@ using LinearAlgebra
 using IterTools
 using Combinatorics
 using Clustering
+include("septrisymNMF.jl")
+include("SSPA.jl")
+
 function svds(A, k)
     U, Σ, V = svd(A)
     Uk = U[:, 1:k]
@@ -10,7 +13,7 @@ function svds(A, k)
     Vk = V[:, 1:k]
     return Uk, Σk, Vk
 end
-include("septrisymNMF.jl")
+
 function roots_third_degree(a, b, c, d)
     
     if a == 0

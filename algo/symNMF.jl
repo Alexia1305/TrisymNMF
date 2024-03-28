@@ -2,6 +2,7 @@ using Distributions
 using LinearAlgebra
 using SparseArrays
 using Hungarian
+include("SSPA.jl")
 function frobenius_sym_loss(A::Matrix{Float64}, M, MA::Matrix{Float64})
     t1 = 0.5 * (norm(M) ^ 2 + norm(A' * A) ^ 2) # A' * A is a small r x r sized matrix
     
@@ -47,6 +48,24 @@ function random_init_kmeans(X, r::Int)
     
     return W
 end
+function init_sspa(X,r)
+    n = size(X, 1)
+    p=max(2,Int(floor(0.1*n/r)))
+    options = Dict(:average => 1) # Définissez les options avec lra = 1
+    WO,K=SSPA(X, r, p, options)
+
+    norm2x = sqrt.(sum(X.^2, dims=1))
+    Xn = X .* (1 ./ (norm2x .+ 1e-16))
+    normX2 = sum(X .^ 2)
+
+    e = Float64[]
+
+    HO = orthNNLS(X, WO, Xn)
+    W=HO'
+    return Matrix(W)
+
+end 
+
 function grad_SNMF!(G::Matrix{Float64}, M, A::Matrix{Float64}, MA::Matrix{Float64})
     mul!(MA, M, A)
     mul!(G, A, A' * A)
@@ -194,7 +213,9 @@ function SymNMF(M, r::Int;max_iter=500, max_time=5,tol = 1e-7, A_init = "random"
     # initialization
     if A_init =="k_means"
         A = random_init_kmeans(M, r)
-    else
+    elseif A_init=="sspa"
+        A = init_sspa(M,r)
+    else 
         A = random_init_sym(M, r)
     end
 

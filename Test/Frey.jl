@@ -1,20 +1,15 @@
 using MAT
-file_path = "dataset/freyDataset.mat"
-include("../algo/algo_symTriONMF.jl")
-include("../algo/ONMF.jl")
-include("../algo/symNMF.jl")
-
 using Printf
 using Random
-Random.seed!(123)
 using LightGraphs # Charger le package LightGraphs pour manipuler les graphes
 using Plots # Charger le package Plots pour les tracés
 using LinearAlgebra
-
 using GraphPlot
 using Images
-
-
+include("../algo/algo_symTriONMF.jl")
+include("../algo/ONMF.jl")
+include("../algo/symNMF.jl")
+Random.seed!(123)
 
 function affichage(W::Matrix{Float64})
     # Dimensions des images individuelles
@@ -45,15 +40,15 @@ end
 
 
 function test()
+    file_path = "dataset/freyDataset.mat"
     mat = matread(file_path)
     A = mat["M"]
 
     X=A*A'
     n=560
-    # Rang interne de la factorisation
+    ############# OPTIONS ######################
     r = 7
-    println(size(X))
-    # Options de symNMF (voir également loadoptions.m)
+    init="sspa"
     maxiter=10000
     timelimit=5
     epsi=10e-7
@@ -68,7 +63,7 @@ function test()
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, "k_means", timelimit)
+            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, init, timelimit)
             if erreur<min_erreur
                 Wb=W
                 Sb=S
@@ -77,12 +72,12 @@ function test()
         erreurs[1,i] = erreur
 
         temps_execution[2,i] = @elapsed begin
-            W, H, erreur = alternatingONMF(X, r, maxiter, epsi, "k_means")
+            W, H, erreur = alternatingONMF(X, r, maxiter, epsi,init)
         end
         erreurs[2,i] = erreur
 
         temps_execution[3,i] = @elapsed begin
-            A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init="k_means")
+            A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
         end
         erreurs[3,i] = erreur
     end
@@ -96,10 +91,8 @@ function test()
     methods = ["symTriONMF", "ONMF", "SymNMF"]
     # Affichage des résultats
     for j in 1:nbr_algo
-
         println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
-    
-        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]/100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]/100)," %")
+        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]*100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]*100)," %")
     end   
     # Création du graphique
 
@@ -134,7 +127,7 @@ function test()
 end 
 
 Wb=test()
-display(affichage(Wb))
+#display(affichage(Wb))
 variables = Dict("W" => Wb)
 
 # Enregistrer le fichier .mat

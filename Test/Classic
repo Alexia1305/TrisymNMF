@@ -1,28 +1,25 @@
 using MAT
-file_path = "dataset/classic_20.mat"
+using Printf
+using LightGraphs # Charger le package LightGraphs pour manipuler les graphes
+using Plots # Charger le package Plots pour les tracés
+using LinearAlgebra
+using GraphPlot
 include("../algo/algo_symTriONMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 
-using Printf
-
-
-using LightGraphs # Charger le package LightGraphs pour manipuler les graphes
-using Plots # Charger le package Plots pour les tracés
-using LinearAlgebra
-
-using GraphPlot
 # Charger le fichier karate.mat
+file_path = "dataset/classic_20.mat"
 mat = matread(file_path)
 X = mat["Xkl"]
 words=mat["motlk"]
 
 X=X*X'
 X=Matrix(X)
-# Rang interne de la factorisation
-r = 40
 
-# Options de symNMF (voir également loadoptions.m)
+# OPTIONS ############
+r = 40
+init="sspa"
 maxiter=10000
 timelimit=60
 epsi=10e-7
@@ -34,17 +31,17 @@ erreurs = zeros(nbr_algo,nbr_tests)
 # Boucle pour effectuer les tests
 for i in 1:nbr_tests
     temps_execution[1,i] = @elapsed begin
-        W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, "k_means", timelimit)
+        W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, init, timelimit)
     end
     erreurs[1,i] = erreur
 
     temps_execution[2,i] = @elapsed begin
-        W, H, erreur = alternatingONMF(X, r, maxiter, epsi, "k_means")
+        W, H, erreur = alternatingONMF(X, r, maxiter, epsi, init)
     end
     erreurs[2,i] = erreur
 
     temps_execution[3,i] = @elapsed begin
-        A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init="k_means")
+        A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
     end
     erreurs[3,i] = erreur
 end
@@ -58,10 +55,9 @@ ecart_type_erreurs = std(erreurs, dims=2)
 methods = ["symTriONMF", "ONMF", "SymNMF"]
 # Affichage des résultats
 for j in 1:nbr_algo
-    println("dataset calssic")
+    println("dataset classic")
     println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
-    
-        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]/100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]/100)," %")
+    println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]*100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]*100)," %")
 end   
 # Création du graphique
 

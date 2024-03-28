@@ -1,72 +1,55 @@
 using MAT
-file_path = "dataset/CBCL.mat"
-include("../algo/algo_symTriONMF.jl")
-include("../algo/ONMF.jl")
-include("../algo/symNMF.jl")
-
 using Printf
 using Random
-Random.seed!(123)
 using LightGraphs # Charger le package LightGraphs pour manipuler les graphes
 using Plots # Charger le package Plots pour les tracés
 using LinearAlgebra
-
 using GraphPlot
 using Images
 
-function affichage(W::Matrix{Float64})
-    # Créer une image vide
-    largeur, hauteur = 19, 19
-    image_combinee = zeros(RGB, hauteur, largeur * size(W, 2))
+include("../algo/algo_symTriONMF.jl")
+include("../algo/ONMF.jl")
+include("../algo/symNMF.jl")
+include("affichage.jl")
+Random.seed!(123)
 
-    # Redimensionner et combiner les images générées par les colonnes de W
-    for i in 1:size(W, 2)
-        # Remettre la colonne de W en matrice 19x19
-        image_colonne = reshape(W[:, i], largeur, hauteur)
 
-        # Normaliser les valeurs entre 0 et 1
-        image_colonne .= (image_colonne .- minimum(image_colonne)) / (maximum(image_colonne) - minimum(image_colonne))
-        image_colonne=abs.(1 .- image_colonne)
-        # Ajouter l'image à l'image combinée
-        image_combinee[:, (i - 1) * largeur + 1:i * largeur] .= Gray.(image_colonne)
-    end
 
-    # Afficher l'image combinée
-    return image_combinee
-end
 function test()
     # Charger le fichier karate.mat
+    file_path = "dataset/CBCL.mat"
     mat = matread(file_path)
     A = mat["X"]
 
     X=A*A'
-    # Rang interne de la factorisation
+    ###########OPTIONS##################################################
     r = 5
-    n=size(X)[1]
-    Wb=zeros(n,r)
-    # Options de symNMF (voir également loadoptions.m)
+    init="sspa"
     maxiter=10000
     timelimit=5
     epsi=10e-7
     nbr_tests=20
     nbr_algo=3
+
     # Initialisation des tableaux pour stocker les temps et les erreurs
+    n=size(X)[1]
+    Wb=zeros(n,r)
     temps_execution = zeros(nbr_algo,nbr_tests)
     erreurs = zeros(nbr_algo,nbr_tests)
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, "k_means", timelimit)
+            Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[1,i] = erreur
 
         temps_execution[2,i] = @elapsed begin
-            W, H, erreur = alternatingONMF(X, r, maxiter, epsi, "k_means")
+            W, H, erreur = alternatingONMF(X, r, maxiter, epsi,init)
         end
         erreurs[2,i] = erreur
 
         temps_execution[3,i] = @elapsed begin
-            A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init="k_means")
+            A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
         end
         erreurs[3,i] = erreur
     end
@@ -82,7 +65,7 @@ function test()
     for j in 1:nbr_algo
         println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
     
-        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]/100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]/100)," %")
+        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]*100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]*100)," %")
     end   
     # Création du graphique
 
@@ -117,7 +100,6 @@ function test()
 end 
 # # Créer un dictionnaire contenant la matrice W
 Wb=test()
-print(Wb)
 variables = Dict("W" => Wb)
 
 # Enregistrer le fichier .mat

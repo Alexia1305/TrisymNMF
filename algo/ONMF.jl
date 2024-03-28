@@ -1,4 +1,5 @@
 include("SNPA")
+include("SSPA.jl")
 using LinearAlgebra
 
 
@@ -65,6 +66,12 @@ function alternatingONMF(X, r, maxiter=100,delta=1e-6,init_algo="k_means")
         if length(K) < r
             error("SNPA was not able to extract r indices. This means that your data set does not even have r extreme rays.")
         end
+    end 
+    if init_algo=="sspa"
+        n = size(X, 1)
+        p=max(2,Int(floor(0.1*n/r)))
+        options = Dict(:average => 1) # Définissez les options avec lra = 1
+        W,K=SSPA(X, r, p, options)
     end 
 
     m, n = size(X)

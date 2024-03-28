@@ -2,6 +2,7 @@ using Distributions
 using LinearAlgebra
 using SparseArrays
 
+
 function svds(A, k)
     U, Σ, V = svd(A)
     Uk = U[:, 1:k]
@@ -102,25 +103,3 @@ function SSPA(X, r, p, options)
     
     return W, K
 end
-n = 10
-r= 4
-W=rand(n,r)
-H = zeros(r, n)
-for i in 1:n
-    k = rand(1:r)
-    H[k, i] = rand()
-end
-X=W*H
-p=2
-options = Dict(:average => 1) # Définissez les options avec lra = 1
-Ws,K=SSPA(X, r, p, options)
-
-norm2x = sqrt.(sum(X.^2, dims=1))
-Xn = X .* (1 ./ (norm2x .+ 1e-16))
-normX2 = sum(X .^ 2)
-
-e = Float64[]
-
-H = orthNNLS(X, Ws, Xn)
-println(Ws)
-println(H)

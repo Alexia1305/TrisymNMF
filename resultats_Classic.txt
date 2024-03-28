@@ -6,16 +6,16 @@ nbr_tests = 20
 
 Moyennes des temps d'exécution :
 ["symTriONMF", "ONMF", "SymNMF"]
-13.60.1246.72
+21.90.1996.93
 
 Écart types des temps d'exécution :
 ["symTriONMF", "ONMF", "SymNMF"]
-2.960.4233.04
+1.230.7280.434
 
 Moyennes des erreurs :
 ["symTriONMF", "ONMF", "SymNMF"]
-0.3980.3520.206
+0.3850.3430.205
 
 Écart types des erreurs :
 ["symTriONMF", "ONMF", "SymNMF"]
-0.005320.006540.000367
+1.71e-165.7e-178.54e-17
