@@ -1,21 +1,23 @@
 include("../algo/algo_symTriONMF.jl")
 using DelimitedFiles
 using Plots
+using LaTeXStrings
 gr()  # Configurer le backend GR
 using SparseArrays
 dim_n=[10,30,50,100,150,200]
 dim_r=[2,3,4,5,6,7]
-nbr_algo=3
+nbr_algo=4
 result=zeros(length(dim_n), 4)
 result2=zeros(length(dim_n),4)
 result3=zeros(length(dim_n),4)
+result4=zeros(length(dim_n),4)
 for dim in 1:length(dim_n)
     println(dim)
     nbr_test=100
-    accuracy_moy=zeros(3)
-    succes=zeros(3)
-    time=zeros(3)
-    error=zeros(3)
+    accuracy_moy=zeros(4)
+    succes=zeros(4)
+    time=zeros(4)
+    error=zeros(4)
     for test in 1:nbr_test
         # création matrice
         n = dim_n[dim]
@@ -63,7 +65,9 @@ for dim in 1:length(dim_n)
                 W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
             end 
         end 
-        
+        temps_execution_4 = @elapsed begin
+            W4, S4, erreur4 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"spa")
+        end 
         accu1=calcul_accuracy(W_true,W)
         accu2=calcul_accuracy(W_true,W2)
         
@@ -85,7 +89,7 @@ for dim in 1:length(dim_n)
         error[2]+=erreur2
         
         
-        if nbr_algo>=3
+        if nbr_algo>=4
             accu3=calcul_accuracy(W_true,W3)
             accuracy_moy[3]+= accu3
             if accu3==1
@@ -93,6 +97,13 @@ for dim in 1:length(dim_n)
             end
             time[3]+=temps_execution_3
             error[3]+=erreur3
+            accu4=calcul_accuracy(W_true,W4)
+            accuracy_moy[4]+= accu4
+            if accu4==1
+                succes[4]+=1
+            end
+            time[4]+=temps_execution_4
+            error[4]+=erreur4
         end 
     end 
     accuracy_moy/=nbr_test 
@@ -103,63 +114,88 @@ for dim in 1:length(dim_n)
     result[dim,1]=accuracy_moy[1]
     result2[dim,1]=accuracy_moy[2]
     result3[dim,1]=accuracy_moy[3]
+    result4[dim,1]=accuracy_moy[4]
     result[dim,2]=time[1]
     result2[dim,2]=time[2]
     result3[dim,2]=time[3]
+    result4[dim,2]=time[4]
     result[dim,3]=error[1]
     result2[dim,3]=error[2]
     result3[dim,3]=error[3]
+    result4[dim,3]=error[4]
     result[dim,4]=succes[1]/nbr_test
     result2[dim,4]=succes[2]/nbr_test
     result3[dim,4]=succes[3]/nbr_test
+    result4[dim,4]=succes[4]/nbr_test
 
 end 
+# Taille de la police
+font_size = 11
+plot_font = "Computer Modern"
+default(
+    fontfamily=plot_font,
+    guidefontsize=font_size,
+    linewidth=2, 
+    framestyle=:box, 
+    label=nothing, 
+    grid=false
+)
 
-plot(dim_n, result2[:,4],label="coordinate_descent init kmeans",title="Evolution of the success rate as a function of n and r",ylim=(0,1),linestyle=:dash,linecolor=:red)
+
+
+plot(dim_n, result2[:,4],label="coordinate_descent init kmeans",ylim=(0,1),linestyle=:dash,linecolor=:red,xtickfont=font_size, ytickfont=font_size, legendfont=font_size)
 scatter!(dim_n, result2[:,4],label="",markercolor=:red)
-plot!(dim_n, result[:,4],label="coordinate_descent init random", xlabel="n", ylabel="Success rate", title="Evolution of the success rate as a function of n and r",ylim=(0,1),linecolor=:blue)
+plot!(dim_n, result[:,4],label="coordinate_descent init random", xlabel="n", ylabel="Success rate",ylim=(0,1),linecolor=:blue)
 scatter!(dim_n, result[:,4],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,4],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,4],label="coordinate_descent init sspa",linestyle=:dashdot,linecolor=:green,xtickfont=font_size, ytickfont=font_size, legendfont=font_size)
     scatter!(dim_n, result3[:,4],label="",markercolor=:green)
+    plot!(dim_n, result4[:,4],label="coordinate_descent init spa",linestyle=:dot,linecolor=:purple,xtickfont=font_size, ytickfont=font_size, legendfont=font_size)
+    scatter!(dim_n, result4[:,4],label="",markercolor=:purple)
 end 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure4.png")
 
 
-plot(dim_n, result2[:,1],label="coordinate_descent init kmeans",title="Evolution of the accuracy mean as a function of n and r",ylim=(0,1),linestyle=:dash,linecolor=:red)
+plot(dim_n, result2[:,1],label="coordinate_descent init kmeans",xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,1),linestyle=:dash,linecolor=:red)
 scatter!(dim_n, result2[:,1],label="",markercolor=:red)
-plot!(dim_n, result[:,1],label="coordinate_descent init random", xlabel="n", ylabel="accuracy mean", title="Evolution of the accuracy mean as a function of n and r",ylim=(0,1),linecolor=:blue)
+plot!(dim_n, result[:,1],label="coordinate_descent init random", xlabel="n", ylabel="accuracy mean", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,1),linecolor=:blue)
 scatter!(dim_n, result[:,1],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,1],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,1],label="coordinate_descent init sspa",linestyle=:dashdot,linecolor=:green)
     scatter!(dim_n, result3[:,1],label="",markercolor=:green)
+    plot!(dim_n, result4[:,1],label="coordinate_descent init spa",linestyle=:dot,linecolor=:purple)
+    scatter!(dim_n, result4[:,1],label="",markercolor=:purple)
 end 
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure.png")
 
 
-plot(dim_n, result2[:,2],label="coordinate_descent init kmeans",title="Evolution of the resolution time a function of n and r",linestyle=:dash,linecolor=:red)
+plot(dim_n, result2[:,2],label="coordinate_descent init kmeans",xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linestyle=:dash,linecolor=:red)
 scatter!(dim_n, result2[:,2],label="",markercolor=:red)
-plot!(dim_n, result[:,2],label="coordinate_descent init random ", xlabel="n", ylabel="time [s]", title="Evolution of the resolution time a function of n and r",linecolor=:blue)
+plot!(dim_n, result[:,2],label="coordinate_descent init random ", xlabel="n", ylabel="time [s]", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(dim_n, result[:,2],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,2],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,2],label="coordinate_descent init sspa",linestyle=:dashdot,linecolor=:green)
     scatter!(dim_n, result3[:,2],label="",markercolor=:green)
+    plot!(dim_n, result4[:,2],label="coordinate_descent init spa",linestyle=:dot,linecolor=:purple)
+    scatter!(dim_n, result4[:,2],label="",markercolor=:purple)
 end 
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure2.png")
 
 
-plot(dim_n, result2[:,3],label="coordinate_descent init kmeans",xlabel="n", ylabel="relative error", title="Evolution of the relative error as a function of n and r",ylim=(0,:auto),linestyle=:dash,linecolor=:red)
+plot(dim_n, result2[:,3],label="coordinate_descent init kmeans",xlabel="n", ylabel="relative error", title=xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,:auto),linestyle=:dash,linecolor=:red)
 scatter!(dim_n, result2[:,3],label="",markercolor=:red)
-plot!(dim_n, result[:,3],label="coordinate_descent init random", xlabel="n", ylabel="relative error", title="Evolution of the relative error as a function of n and r",ylim=(0,:auto),linecolor=:blue)
+plot!(dim_n, result[:,3],label="coordinate_descent init random", xlabel="n", ylabel="relative error", title=xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,:auto),linecolor=:blue)
 scatter!(dim_n, result[:,3],label="",markercolor=:blue)
 if nbr_algo >=3
-    plot!(dim_n, result3[:,3],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+    plot!(dim_n, result3[:,3],label="coordinate_descent init sspa",linestyle=:dashdot,linecolor=:green)
     scatter!(dim_n, result3[:,3],label="",markercolor=:green)
+    plot!(dim_n, result4[:,3],label="coordinate_descent init spa",linestyle=:dot,linecolor=:purple)
+    scatter!(dim_n, result4[:,3],label="",markercolor=:purple)
 end 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure3.png")

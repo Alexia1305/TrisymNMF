@@ -3,6 +3,7 @@ using DelimitedFiles
 using Plots
 gr()  # Configurer le backend GR
 using SparseArrays
+using LaTeXStrings
 nbr_level=5
 n=200
 const rin=8
@@ -78,13 +79,13 @@ for level in 1:nbr_level
             W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"k_means")
         end
         temps_execution_2 = @elapsed begin
-            W2, S2, erreur2 = symTriONMF_update_rules(X, r, maxiter,epsi,"k_means")
-        end 
+            W2, S2, erreur2 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
+        end
         temps_execution_3 = @elapsed begin
-            W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
+            W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"random")
         end
         temps_execution_4 = @elapsed begin
-            W4, S4, erreur4 = symTriONMF_update_rules(X, r, maxiter,epsi,"sspa")
+            W4, S4, erreur4 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"spa")
         end 
         
         accu1=calcul_accuracy(W_true,W)
@@ -144,54 +145,65 @@ for level in 1:nbr_level
     result4[level,3]=error4/nbr_test
     result4[level,4]=succes4/nbr_test
 end 
-plot(epsilon, result[:,4],label="coordinate_descent init k_means", xlabel="n", ylabel="Success rate", title="Evolution of the success rate as a function of n and r",linecolor=:blue)
+# Taille de la police
+font_size = 11
+plot_font = "Computer Modern"
+default(
+    fontfamily=plot_font,
+    guidefontsize=font_size,
+    linewidth=2, 
+    framestyle=:box, 
+    label=nothing, 
+    grid=false
+)
+plot(epsilon, result[:,4],label="init kmeans", xlabel="n", ylabel="Success rate", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(epsilon, result[:,4],label="",markercolor=:blue)
 
 
-plot!(epsilon, result2[:,4],label="multiplicative updates init k_means",linestyle=:dash,linecolor=:red)
+plot!(epsilon, result2[:,4],label="init sspa",linestyle=:dash,linecolor=:red)
 scatter!(epsilon, result2[:,4],label="",markercolor=:red)
-plot!(epsilon, result4[:,4],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+plot!(epsilon, result4[:,4],label="init spa",linestyle=:dot,linecolor=:purple)
 scatter!(epsilon, result4[:,4],label="",markercolor=:purple)
-plot!(epsilon, result3[:,4],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+plot!(epsilon, result3[:,4],label="init random",linestyle=:dashdot,linecolor=:green)
 scatter!(epsilon, result3[:,4],label="",markercolor=:green)
 
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure4.png")
-plot(epsilon, result[:,1],label="coordinate_descent init k_means", xlabel="epsilon", ylabel="accuracy", title="Evolution of the accuracy a function of epsilon",linecolor=:blue)
+plot(epsilon, result[:,1],label="init kmeans", xlabel="epsilon", ylabel="accuracy", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(epsilon, result[:,1],label="",markercolor=:blue)
 
-plot!(epsilon, result2[:,1],label="multiplicative updates init k_means",linecolor=:red)
+plot!(epsilon, result2[:,1],label="init sspa",linecolor=:red,linestyle=:dash)
 scatter!(epsilon, result2[:,1],label="",markercolor=:red)
-plot!(epsilon, result4[:,1],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+plot!(epsilon, result4[:,1],label="init spa",linestyle=:dot,linecolor=:purple)
 scatter!(epsilon, result4[:,1],label="",markercolor=:purple)
-plot!(epsilon, result3[:,1],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+plot!(epsilon, result3[:,1],label="init random",linestyle=:dashdot,linecolor=:green)
 scatter!(epsilon, result3[:,1],label="",markercolor=:green)
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure.png")
 
-plot(epsilon, result[:,2],label="coordinate_descent init k_means", xlabel="epsilon", ylabel="time [s]", title="Evolution of the resolution time a function of epsilon",linecolor=:blue)
+plot(epsilon, result[:,2],label="init kmeans", xlabel="epsilon", ylabel="time [s]", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(epsilon, result[:,2],label="",markercolor=:blue)
 
-plot!(epsilon, result2[:,2],label="multiplicative updates init k_means",linecolor=:red)
+plot!(epsilon, result2[:,2],label="init sspa",linecolor=:red,linestyle=:dash)
 scatter!(epsilon, result2[:,2],label="",markercolor=:red)
-plot!(epsilon, result4[:,2],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+plot!(epsilon, result4[:,2],label="init spa",linestyle=:dot,linecolor=:purple)
 scatter!(epsilon, result4[:,2],label="",markercolor=:purple)
-plot!(epsilon, result3[:,2],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+plot!(epsilon, result3[:,2],label="init random",linestyle=:dashdot,linecolor=:green)
 scatter!(epsilon, result3[:,2],label="",markercolor=:green)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure2.png")
 
 
-plot(epsilon, result[:,3],label="coordinate_descent init k_means", xlabel="epsilon", ylabel="relative error", title="Evolution of the relative error as a function of epsilon",ylim=(0,:auto),linecolor=:blue)
+plot(epsilon, result[:,3],label="init kmeans", xlabel="epsilon", ylabel="relative error", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,:auto),linecolor=:blue)
 scatter!(epsilon, result[:,3],label="",markercolor=:blue)
 
-plot!(epsilon, result2[:,3],label="multiplicative updates init k_means",linecolor=:red)
+plot!(epsilon, result2[:,3],label="init sspa",linecolor=:red,linestyle=:dash)
 scatter!(epsilon, result2[:,3],label="",markercolor=:red)
-plot!(epsilon, result4[:,3],label="multiplicative updates init sspa",linestyle=:dash,linecolor=:purple)
+plot!(epsilon, result4[:,3],label="init spa",linestyle=:dot,linecolor=:purple)
 scatter!(epsilon, result4[:,3],label="",markercolor=:purple)
-plot!(epsilon, result3[:,3],label="coordinate_descent init sspa",linestyle=:dash,linecolor=:green)
+plot!(epsilon, result3[:,3],label="init random",linestyle=:dashdot,linecolor=:green)
 scatter!(epsilon, result3[:,3],label="",markercolor=:green)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)

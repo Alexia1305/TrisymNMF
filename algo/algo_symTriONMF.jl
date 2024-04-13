@@ -5,6 +5,7 @@ using Combinatorics
 using Clustering
 include("septrisymNMF.jl")
 include("SSPA.jl")
+include("ONMF.jl")
 
 function svds(A, k)
     U, Σ, V = svd(A)
@@ -239,14 +240,17 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
 
     end 
     if init_algo=="spa"
-        W, S = septrisymNMF(X, r,epsi)
+        K = spa(X, r, epsi)
+        WO=X[:,K]
         n = size(X, 1)
-        for i in 1:n
-            indice_max = argmax(W[i, :])
-            elem=W[i,indice_max]
-            W[i, :] .= 0
-            W[i, indice_max] = elem
-        end 
+        norm2x = sqrt.(sum(X.^2, dims=1))
+        Xn = X .* (1 ./ (norm2x .+ 1e-16))
+        normX2 = sum(X .^ 2)
+
+        e = Float64[]
+
+        HO = orthNNLS(X, WO, Xn)
+        W=HO'
         for k in 1:r
             nw=norm(W[:, k],2)
             if nw==0
