@@ -1,21 +1,21 @@
 Paramètres :
 maxiter = 10000
-timelimit = 5
+timelimit = 30
 epsi = 1.0e-6
-nbr_tests = 20
+nbr_tests = 5
 
 Moyennes des temps d'exécution :
-["symTriONMF", "ONMF", "SymNMF"]
-0.5850.1550.624
+["symTriONMF", "ONMF", "SymNMF", "MU"]
+26.30.39220.10.32
 
 Écart types des temps d'exécution :
-["symTriONMF", "ONMF", "SymNMF"]
-0.6270.5940.139
+["symTriONMF", "ONMF", "SymNMF", "MU"]
+1.250.7961.410.59
 
 Moyennes des erreurs :
-["symTriONMF", "ONMF", "SymNMF"]
-0.01530.01390.00664
+["symTriONMF", "ONMF", "SymNMF", "MU"]
+0.008180.006390.000620.00898
 
 Écart types des erreurs :
-["symTriONMF", "ONMF", "SymNMF"]
-1.78e-181.78e-180
+["symTriONMF", "ONMF", "SymNMF", "MU"]
+0000

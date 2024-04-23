@@ -2,8 +2,11 @@ include("../algo/algo_symTriONMF.jl")
 using DelimitedFiles
 using Plots
 using LaTeXStrings
+
 gr()  # Configurer le backend GR
 using SparseArrays
+using Random
+Random.seed!(2001)
 dim_n=[10,30,50,100,150,200]
 dim_r=[2,3,4,5,6,7]
 nbr_algo=4

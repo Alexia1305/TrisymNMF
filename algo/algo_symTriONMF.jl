@@ -3,6 +3,8 @@ using LinearAlgebra
 using IterTools
 using Combinatorics
 using Clustering
+using Hungarian 
+
 include("septrisymNMF.jl")
 include("SSPA.jl")
 include("ONMF.jl")
@@ -150,6 +152,8 @@ function min_degre4(a, b, c)
     return sol, min
 end
 
+
+
 function calcul_erreur(X, W, S)
    
     error2=1-((2*dot(W'*X,S*W')-dot((W'*W)*S,S*(W'*W)))/(dot(X,X)))
@@ -182,6 +186,47 @@ function calcul_accuracy(W_true,W_find)
     return float(maxi)
 
 end 
+# function bestMap(L1, L2)
+#     L1 = vec(L1)
+#     L2 = vec(L2)
+#     if length(L1) != length(L2)
+#         error("size(L1) must == size(L2)")
+#     end
+
+#     Label1 = sort(unique(L1))
+#     nClass1 = length(Label1)
+#     Label2 = sort(unique(L2))
+   
+#     nClass2 = length(Label2)
+
+#     nClass = max(nClass1, nClass2)
+#     G = zeros(Int, nClass, nClass)
+    
+#     for i = 1:nClass1
+#         for j = 1:nClass2
+#             G[i, j] = count(x -> L1[x] == Label1[i] && L2[x] == Label2[j], 1:length(L1))
+#         end
+#     end
+   
+#     ass,cost = hungarian(-G)
+#     println(ass)
+#     newL2 = zeros(Int, size(L2))
+#     for i = 1:nClass2
+#         newL2[L2 .== Label2[i]] .= Label1[ass[i]]
+#     end
+#     return newL2
+# end
+
+# function calcul_accuracy2(W_true,W_find)
+#     dim = size(W_true)
+#     n=dim[1]
+#     r=dim[2]
+#     L_true = [findfirst(x -> x != 0, ligne) for ligne in eachrow(W_true)]
+#     L_find = [findfirst(x -> x != 0, ligne) for ligne in eachrow(W_find)]
+#     Lmap = bestMap(L_true,L_find)
+#     println(Lmap)
+#     return sum(L_true .== Lmap) / length(L_true)
+# end 
 
 function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",time_limit=5)
     debut = time()
@@ -369,7 +414,7 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
     return W, S, erreur
 end
 
-function symTriONMF_update_rules(X, r, maxiter,epsi,init_alg="k_means")
+function symTriONMF_update_rules(X, r, maxiter,epsi,init_alg="k_means",time_limit=5)
 
     #Orthogonal Nonnegative Matrix Tri-factorizations for Clustering
      # Initialiser le temps de début
@@ -473,7 +518,7 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_alg="k_means")
         
 
         # Vérifier si le temps écoulé est inférieur à la limite
-        if temps_ecoule > 5
+        if temps_ecoule > time_limit
            
             println("Limite de temps dépassée. mu")
             break

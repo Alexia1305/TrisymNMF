@@ -46,28 +46,24 @@ function test()
 
     X=A*A'
     n=560
-    ############# OPTIONS ######################
-    r = 7
+        ###########OPTIONS##################################################
+    r =30
     init="sspa"
     maxiter=10000
-    timelimit=5
+    timelimit=40
     epsi=10e-7
-    nbr_tests=20
-    nbr_algo=3
-    min_erreur= 1
-    Wb=zeros(n,r)
-    Sb=zeros(r,r)
+    nbr_tests=5
+    nbr_algo=4
+
     # Initialisation des tableaux pour stocker les temps et les erreurs
+    n=size(X)[1]
+    println(n)
     temps_execution = zeros(nbr_algo,nbr_tests)
     erreurs = zeros(nbr_algo,nbr_tests)
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, init, timelimit)
-            if erreur<min_erreur
-                Wb=W
-                Sb=S
-            end 
+            W1, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[1,i] = erreur
 
@@ -80,6 +76,10 @@ function test()
             A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
         end
         erreurs[3,i] = erreur
+        temps_execution[4,i] = @elapsed begin
+            W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
+        end
+        erreurs[4,i] = erreur
     end
 
     # Calcul de la moyenne et de l'écart type des temps et des erreurs
@@ -88,16 +88,17 @@ function test()
     moyenne_erreurs = mean(erreurs, dims=2)
     ecart_type_erreurs = std(erreurs, dims=2)
     # Création du graphique
-    methods = ["symTriONMF", "ONMF", "SymNMF"]
+    methods = ["symTriONMF", "ONMF", "SymNMF","MU"]
     # Affichage des résultats
     for j in 1:nbr_algo
         println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
+
         println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]*100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]*100)," %")
     end   
     # Création du graphique
 
     # Enregistrement des résultats dans un fichier texte
-    nom_fichier_resultats = "resultats_Frey.txt"
+    nom_fichier_resultats = "resultats_TDT2.txt"
     # Enregistrement des résultats dans un fichier texte
     open(nom_fichier_resultats, "w") do io
         write(io, "Paramètres :\n")
@@ -119,16 +120,21 @@ function test()
         write(io, join(@sprintf("%.3g", x) for x in vec(ecart_type_erreurs)) * "\n")
     end
 
+
+
+
+
+
     scatter_plot_temps=scatter(methods, moyenne_temps[:, 1], yerr=ecart_type_temps[:, 1], label="Temps d'exécution moyen ± écart-type", xlabel="Méthode", ylabel="Temps d'exécution (s)", title="Comparaison des méthodes sur KARATE")
     scatter_plot_erreurs=scatter(methods, moyenne_erreurs[:, 1], yerr=ecart_type_erreurs[:, 1], label="Erreur moyenne ± écart-type", xlabel="Méthode", ylabel="Erreur", title="Comparaison des méthodes sur KARATE")
     savefig(scatter_plot_temps, "Frey_temps.png")
     savefig(scatter_plot_erreurs, "Frey_erreur.png")
-    return Wb
+    #return Wb
 end 
 
-Wb=test()
+test()
 #display(affichage(Wb))
-variables = Dict("W" => Wb)
+#variables = Dict("W" => Wb)
 
 # Enregistrer le fichier .mat
 matwrite("WFrey.mat", variables)

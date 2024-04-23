@@ -23,16 +23,17 @@ function test()
 
     X=A*A'
     ###########OPTIONS##################################################
-    r = 5
+    r =50
     init="sspa"
     maxiter=10000
-    timelimit=5
+    timelimit=30
     epsi=10e-7
-    nbr_tests=20
-    nbr_algo=3
+    nbr_tests=5
+    nbr_algo=4
 
     # Initialisation des tableaux pour stocker les temps et les erreurs
     n=size(X)[1]
+    println(n)
     Wb=zeros(n,r)
     temps_execution = zeros(nbr_algo,nbr_tests)
     erreurs = zeros(nbr_algo,nbr_tests)
@@ -52,6 +53,10 @@ function test()
             A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
         end
         erreurs[3,i] = erreur
+        temps_execution[4,i] = @elapsed begin
+            W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
+        end
+        erreurs[4,i] = erreur
     end
 
     # Calcul de la moyenne et de l'écart type des temps et des erreurs
@@ -60,7 +65,7 @@ function test()
     moyenne_erreurs = mean(erreurs, dims=2)
     ecart_type_erreurs = std(erreurs, dims=2)
     # Création du graphique
-    methods = ["symTriONMF", "ONMF", "SymNMF"]
+    methods = ["symTriONMF", "ONMF", "SymNMF","MU"]
     # Affichage des résultats
     for j in 1:nbr_algo
         println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
