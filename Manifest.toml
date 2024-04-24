@@ -2,7 +2,7 @@
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "d5530411d83ed37d0d0371b182d181d0bddce331"
+project_hash = "d66d957b321a4a3b809f48e26486e3b751731c81"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -946,6 +946,12 @@ deps = ["BufferedStreams", "CodecZlib", "HDF5", "SparseArrays"]
 git-tree-sha1 = "ed1cf0a322d78cee07718bed5fd945e2218c35a1"
 uuid = "23992714-dd62-5051-b70f-ba57cb901cac"
 version = "0.10.6"
+
+[[deps.MATLAB]]
+deps = ["Libdl", "SparseArrays"]
+git-tree-sha1 = "f640678d27790992e2a697f60e6afb1be3ebb7fc"
+uuid = "10e44e05-a98a-55b3-a45b-ba969058deb6"
+version = "0.8.4"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl"]

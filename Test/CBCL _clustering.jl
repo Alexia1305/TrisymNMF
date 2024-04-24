@@ -8,167 +8,260 @@ using GraphPlot
 using Images
 using ColorSchemes
 
+
 include("../algo/algo_symTriONMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 include("affichage.jl")
-Random.seed!(123)
-
-nbr_data=5
-# Charger le fichier karate.mat
-file_path = "dataset/CBCL.mat"
-mat = matread(file_path)
-A = mat["X"]
-erreur=zeros(nbr_data,3)
-accu=zeros(nbr_data,3)
-temps_execution=zeros(nbr_data,3)
-
-for data in 1:nbr_data
-    println("data : ",data)
-    if  data==1
-        
-        nbr_images=50
-        r=10
-        groupe = [
-            collect(1:7),
-            collect(8:17),
-            collect(18:20),
-            collect(21:24),
-            collect(25:28),
-            [29, 30, 33:37...], # Utilisation de ... pour étendre l'intervalle
-            [31, 32, 38:40...], # Utilisation de ... pour étendre l'intervalle
-            collect(41:44),
-            collect(45:48),
-            [49, 50]
-        ]
-        Ag=A[:,1:nbr_images]
-    elseif data==2 
-        nbr_images=50
-        r=10
-        groupe=[
-            collect(1:3),
-            collect(4:6),
-            collect(7:13),
-            collect(14:22),
-            collect(23:27),
-            collect(28:31),
-            collect(32:37),
-            collect(38:43),
-            collect(44:47),
-            collect(48:50)
-        ]
-        Ag=A[:,51:100]
-    elseif data==3
-        nbr_images=50
-        r=10
-        groupe=[
-            collect(1:3),
-            collect(4:9),
-            collect(10:12),
-            collect(13:17),
-            collect(18:25),
-            collect(26:31),
-            collect(32:37),
-            collect(38:40),
-            collect(41:46),
-            collect(47:50)
-        ]
-        Ag=A[:,101:150]
-    elseif data==4
-        r=10
-        nbr_images=49
-        groupe=[
-            collect(1:9),
-            collect(7:12),
-            collect(13:18),
-            collect(19:24),
-            collect(25:28),
-            collect(29:33),
-            collect(34:39),
-            collect(40:44),
-            collect(45:48),
-            collect(49)
-        ]
-        Ag=A[:,152:200]
-
-    elseif data==5
-        nbr_images=50
-        r=9
-        groupe=[
-            [1,2,3],
-            collect(4:9),
-            collect(10:15),
-            collect(16:20),
-            collect(21:26),
-            collect(27:33),
-            collect(34:41),
-            collect(42:45),
-            collect(46:50),
-            
-        ]
-
-        Ag=A[:,201:250]
-    end
-    W_true=zeros(nbr_images,r)
-    for (indice, element) in enumerate(groupe)
-        W_true[element,indice] .= 1
-    end 
-
-
-    # matrice_img=affichage(Ag,10,19,19,1)
-    # file_name="CBCL_person_$data.png"
-    # save(file_name,matrice_img)
-
-    # # prepocessing
-    # for i in 1: nbr_images
-    #     A[:,i]= (A[:,i].-minimum(A[:,i]))./maximum(A[:,i])
-    # end
-
-
-    indices_melanges = shuffle(1:size(Ag, 2))
-    Person=Ag[:,indices_melanges]
-    W_true=W_true[indices_melanges,:]
-    # matrice_img=affichage(Person,10,19,19,1)
-    # file_name="CBCL_person_$data.png"
-    # save(file_name,matrice_img)
-
-    X=Person'*Person
-    ###########OPTIONS##################################################
-    init="sspa"
-    maxiter=100000
-    timelimit=5
-    epsi=10e-7
+function erreur_kmeans(X, assignments, centroids)
+    n = size(X, 1)  # Nombre total de points
+    r = length(centroids)  # Nombre total de clusters
     
-    temps_execution[data,1] = @elapsed begin
-        W, S, erreur[data,1] = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+    # Initialiser l'erreur
+    erreur = 0.0
+    
+    # Calculer la somme des distances au carré de chaque point à son centroïde attribué
+    for i in 1:n
+        cluster_index = assignments[i]  # Indice du cluster attribué au point i
+        centroid = centroids[:,cluster_index]  # Centroïde associé au cluster
+        distance = Euclidean()(X[i, :], centroid)  # Distance entre le point et son centroïde
+        erreur += distance^2
     end
-    println("1")
-    accu[data,1]=calcul_accuracy(W_true,W)
-    temps_execution[data,2] = @elapsed begin
-        W2, S2, erreur[data,2] = symTriONMF_update_rules(X, r, maxiter, epsi,init)
-    end
-    accu[data,2]=calcul_accuracy(W_true,W2)
-    println("2")
-    temps_execution[data,3] = @elapsed begin
-        W3, H, erreur[data,3] = alternatingONMF(X, r, maxiter, epsi,init)
-    end
-    accu[data,3]=calcul_accuracy(W_true,H')
-    method=["CD","MU","ONMF"]
-    for i in 1:3
-        println(method[i])
-        println("temps :",temps_execution[data,i]," s")
-        println("erreur : ",erreur[data,i])
-        println("accuracy: ",accu[data,i])
-    end
-end 
-method=["CD","MU","ONMF"]
-
-for i in 1:3
-    println(method[i])
-    println("temps moy :",sum(temps_execution[:,i])/nbr_data," s")
-    println("erreur moy : ",sum(erreur[:,i])/nbr_data)
-    println("accuracy moy: ",sum(accu[:,i])/nbr_data)
+    
+    return erreur
 end
+
+
+function clustering()
+
+    Random.seed!(123)
+    file_path = "dataset/CBCL.mat"
+    mat = matread(file_path)
+    A = mat["X"]
+    nbr_algo=4
+    nbr_test=2
+    groupes=[2,5,10,20,30,40,49]
+    nbr_groupe=length(groupes)
+
+
+    groupe=[
+        collect(1:7),
+        collect(8:17),
+        collect(18:20),
+        collect(21:24),
+        collect(25:28),
+        [29, 30, 33:37...], # Utilisation de ... pour étendre l'intervalle
+        [31, 32, 38:40...], # Utilisation de ... pour étendre l'intervalle
+        collect(41:44),
+        collect(45:48),
+        [49, 50],
+        collect(51:53),
+        collect(54:56),
+        collect(57:63),
+        collect(64:72),
+        collect(73:77),
+        collect(78:81),
+        collect(82:87),
+        collect(88:93),
+        collect(94:97),
+        collect(98:100),
+        collect(101:103),
+        collect(104:109),
+        collect(110:112),
+        collect(113:117),
+        collect(118:125),
+        collect(126:131),
+        collect(132:137),
+        collect(138:140),
+        collect(141:146),
+        collect(147:150),
+        collect(151:159),
+        collect(157:162),
+        collect(163:168),
+        collect(169:174),
+        collect(175:178),
+        collect(179:183),
+        collect(184:189),
+        collect(190:194),
+        collect(195:198),
+        collect(199:200),
+        [201, 202, 203],
+        collect(204:209),
+        collect(210:215),
+        collect(216:220),
+        collect(221:226),
+        collect(227:233),
+        collect(234:241),
+        collect(242:245),
+        collect(246:250)
+    ]
+    erreur_moy=zeros(nbr_groupe,nbr_algo)
+       
+    temps_execution=zeros(nbr_groupe,nbr_algo)
+
+    for (indice, r) in enumerate(groupes)
+        label_true=[]
+        label_CD=[]
+        label2_MU=[]
+        label3_ONMF=[]
+        label4_K=[]
+        
+
+        for test in 1:nbr_test
+            # selection de r groupes alétoirement
+            indices_aleatoires = randperm(length(groupe))[1:r]
+            groupe_select=groupe[indices_aleatoires]
+            picture_select= [item for sublist in groupe_select for item in sublist]
+            Ag=A[:,picture_select]
+            
+            label=[]
+            last=0
+            for g in groupe_select
+                nvx_groupe=last.+collect(1:length(g))
+                push!(label,nvx_groupe)
+                last+=length(g)
+            end
+            
+            W_true=zeros(length(picture_select),r)
+            for (indice, element) in enumerate(label)
+                W_true[element,indice] .= 1
+            end 
+
+
+            # matrice_img=affichage(Ag,10,19,19,1)
+            # file_name="CBCL_person_$test.png"
+            # save(file_name,matrice_img)
+
+            # # prepocessing
+            # for i in 1: nbr_images
+            #     A[:,i]= (A[:,i].-minimum(A[:,i]))./maximum(A[:,i])
+            # end
+
+
+            indices_melanges = shuffle(1:size(Ag, 2))
+            Person=Ag[:,indices_melanges]
+            W_true=W_true[indices_melanges,:]
+            push!(label_true,[findfirst(x -> x != 0, ligne) for ligne in eachrow(W_true)])
+            # matrice_img=affichage(Person,10,19,19,1)
+            # file_name="CBCL_person_$test.png"
+            # save(file_name,matrice_img)
+
+            X=Person'*Person
+
+            ###########OPTIONS##################################################
+            init="sspa"
+            maxiter=100000
+            timelimit=10
+            epsi=10e-7
+
+            temps_execution[indice,1] += @elapsed begin
+                W, S, erreur= symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            end
+            erreur_moy[indice,1] +=erreur
+            println("1")
+            push!(label_CD,[findfirst(x -> x != 0, ligne) for ligne in eachrow(W)])
+            
+            temps_execution[indice,2] += @elapsed begin
+                W2, S2, erreur = symTriONMF_update_rules(X, r, maxiter, epsi,init)
+            end
+            erreur_moy[indice,2] +=erreur
+            println("2")
+            push!(label2_MU,[findfirst(x -> x != 0, ligne) for ligne in eachrow(W2)])
+
+            temps_execution[indice,3] += @elapsed begin
+                W3, H, erreur= alternatingONMF(X, r, maxiter, epsi,init)
+            end
+            erreur_moy[indice,3] +=erreur
+            push!(label3_ONMF,[findfirst(x -> x != 0, ligne) for ligne in eachrow(H')])
+
+            temps_execution[indice,4] += @elapsed begin
+                n = size(X, 1)
+                Xnorm = similar(X, Float64)
+                # Pour chaque colonne de X
+                for i in 1:n
+                    # Calcul de la norme euclidienne de la colonne
+                    col_norm = norm(X[:, i],2)
+                    # Division de la colonne par sa norme
+                    if col_norm !=0
+                        Xnorm[:, i] = X[:, i] / col_norm
+                    else
+                        Xnorm[:, i] = X[:, i] 
+                end 
+            end
+                R=kmeans(Xnorm,r,maxiter=Int(ceil(1000)))
+            end
+            push!(label4_K, assignments(R))
+           
+            
+            centroids = R.centers
+
+            # Calculer l'erreur K-means
+            erreur_moy[indice,4] += erreur_kmeans(Xnorm,assignments(R), centroids)
+        
+
+
+            if r<=5
+                println(calcul_accuracy(W_true,W))
+                println(calcul_accuracy(W_true,W2))
+                println(calcul_accuracy(W_true,H'))
+            end
+
+        end 
+
+        erreur_moy[indice,:]=erreur_moy[indice,:]./nbr_test
+        temps_execution[indice,:]=temps_execution[indice,:]./nbr_test
+
+        ####### ECRITURE EN MATLAB POur calculer l'accuracy #########
+       
+
+        
+        # Définir le nom du fichier .mat (sans le chemin)
+        nom_fichier = "CBCL_cluster_$r.mat"
+
+        # Définir le chemin du dossier parent où se trouve le dossier "Test"
+        chemin_parent = joinpath(@__DIR__, "..")  # ".." indique le dossier parent
+
+        # Définir le chemin du dossier "Calcul_acc" dans le dossier parent "Test"
+        dossier = joinpath(chemin_parent, "Test", "Calcul_acc")
+
+        # Concaténer le chemin du dossier et le nom du fichier pour obtenir le chemin complet
+        chemin_fichier = joinpath(dossier, nom_fichier)
+        # Écrire les données dans un fichier .mat
+        matfile = matopen(chemin_fichier, "w")
+        write(matfile, "label_true", label_true)
+        write(matfile, "label_CD", label_CD)
+        write(matfile, "label4_K", label4_K)
+        write(matfile, "label3_ONMF", label3_ONMF)
+        write(matfile, "label2_MU", label2_MU)
+        close(matfile)  # Assurez-vous de fermer le fichier après l'écriture des données
+
+
+        println(r)
+        println(erreur_moy[indice,:])
+        println(temps_execution[indice,:])
+
+    end 
+    
+# Définir le chemin du fichier texte de sortie
+chemin_fichier = "CBCL_cluster.txt"
+
+# Ouvrir le fichier en mode écriture
+fichier = open(chemin_fichier, "w")
+
+# Écrire les données dans le fichier texte
+
+write(fichier, "r: ",string(groupes),"\n")
+write(fichier, "Temps d'exécution : ", string(temps_execution), " secondes\n")
+write(fichier, "Erreur : ", string(erreur_moy))
+
+# Fermer le fichier
+close(fichier)
+   
+end 
+
+clustering()
+
+
 
 # classement=Vector{Vector{Int}}(undef, r)  # Initialisation d'un vecteur de r éléments
 # global vide=0

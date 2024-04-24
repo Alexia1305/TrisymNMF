@@ -4,6 +4,8 @@ using Plots
 gr()  # Configurer le backend GR
 using SparseArrays
 using LaTeXStrings
+using Random
+Random.seed!(2001)
 nbr_level=5
 n=200
 const rin=8
@@ -14,7 +16,7 @@ result2=zeros(length(epsilon), 4)
 for level in 1:nbr_level
     r=rin
     println(level)
-    nbr_test=2
+    nbr_test=100
     accuracy_moy=0
     accuracy_moy2=0
     time1=0
@@ -68,7 +70,7 @@ for level in 1:nbr_level
         epsi=10e-5
         # algorithme :
         temps_execution_1 = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"k_means")
+            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
         end
         temps_execution_2 = @elapsed begin
             W2, S2, erreur2 = symTriONMF_update_rules(X, r, maxiter,epsi,"sspa")
@@ -122,29 +124,29 @@ default(
     label=nothing, 
     grid=false
 )
-plot(epsilon, result[:,4],label="init kmeans", xlabel="epsilon", ylabel="Success rate (%)", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
+plot(epsilon, result[:,4],label="CD", xlabel="epsilon", ylabel="Success rate (%)", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(epsilon, result[:,4],label="",markercolor=:blue)
 
 
-plot!(epsilon, result2[:,4],label="init sspa",linestyle=:dash,linecolor=:red)
+plot!(epsilon, result2[:,4],label="MU",linestyle=:dash,linecolor=:red)
 scatter!(epsilon, result2[:,4],label="",markercolor=:red)
 
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure4.png")
-plot(epsilon, result[:,1],label="init kmeans", xlabel="epsilon", ylabel="Accuracy (%)", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
+plot(epsilon, result[:,1],label="CD", xlabel="epsilon", ylabel="Accuracy (%)", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(epsilon, result[:,1],label="",markercolor=:blue)
 
-plot!(epsilon, result2[:,1],label="init sspa",linecolor=:red,linestyle=:dash)
+plot!(epsilon, result2[:,1],label="MU",linecolor=:red,linestyle=:dash)
 scatter!(epsilon, result2[:,1],label="",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
 savefig("figure.png")
 
-plot(epsilon, result[:,2],label="init kmeans", xlabel="epsilon", ylabel="Time (s)", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
+plot(epsilon, result[:,2],label="CD", xlabel="epsilon", ylabel="Time (s)", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,linecolor=:blue)
 scatter!(epsilon, result[:,2],label="",markercolor=:blue)
 
-plot!(epsilon, result2[:,2],label="init sspa",linecolor=:red,linestyle=:dash)
+plot!(epsilon, result2[:,2],label="MU",linecolor=:red,linestyle=:dash)
 scatter!(epsilon, result2[:,2],label="",markercolor=:red)
 
 
@@ -152,10 +154,10 @@ scatter!(epsilon, result2[:,2],label="",markercolor=:red)
 savefig("figure2.png")
 
 
-plot(epsilon, result[:,3],label="init kmeans", xlabel="epsilon", ylabel="relative error", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,:auto),linecolor=:blue)
+plot(epsilon, result[:,3],label="CD", xlabel="epsilon", ylabel="relative error", xtickfont=font_size, ytickfont=font_size, legendfont=font_size,ylim=(0,:auto),linecolor=:blue)
 scatter!(epsilon, result[:,3],label="",markercolor=:blue)
 
-plot!(epsilon, result2[:,3],label="init sspa",linecolor=:red,linestyle=:dash)
+plot!(epsilon, result2[:,3],label="MU",linecolor=:red,linestyle=:dash)
 scatter!(epsilon, result2[:,3],label="",markercolor=:red)
 
 # Enregistrer la figure au format PNG (vous pouvez utiliser d'autres formats comme SVG, PDF, etc.)
