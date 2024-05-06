@@ -1,0 +1,12 @@
+CD:
+Mean Error: 0.019886226281881705, Standard Deviation of Error: 0.023756254616064055, Mean Time: 0.017043188, Standard Deviation of Time: 0.024409909259197976
+
+ONMF:
+Mean Error: 0.01738864707211806, Standard Deviation of Error: 0.01146394666671516, Mean Time: 0.030720756, Standard Deviation of Time: 0.28061744045695736
+
+Symnmf:
+Mean Error: 0.4474471632774003, Standard Deviation of Error: 0.00019660287451005445, Mean Time: 0.0, Standard Deviation of Time: 0.0
+
+Mu:
+Mean Error: 0.01780089215105193, Standard Deviation of Error: 0.01177303770643371, Mean Time: 0.019126690999999994, Standard Deviation of Time: 0.16851445338433862
+

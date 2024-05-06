@@ -39,8 +39,8 @@ function clustering()
     mat = matread(file_path)
     A = mat["X"]
     nbr_algo=4
-    nbr_test=2
-    groupes=[2,5,10,20,30,40,49]
+    nbr_test=50
+    groupes=[2,5,10,20,30,40,50]
     nbr_groupe=length(groupes)
 
 
@@ -54,8 +54,7 @@ function clustering()
         [31, 32, 38:40...], # Utilisation de ... pour étendre l'intervalle
         collect(41:44),
         collect(45:48),
-        [49, 50],
-        collect(51:53),
+        collect(49:53),
         collect(54:56),
         collect(57:63),
         collect(64:72),
@@ -64,9 +63,9 @@ function clustering()
         collect(82:87),
         collect(88:93),
         collect(94:97),
-        collect(98:100),
-        collect(101:103),
-        collect(104:109),
+        collect(98:103),
+        collect(104:107),
+        collect(108:109),
         collect(110:112),
         collect(113:117),
         collect(118:125),
@@ -82,10 +81,9 @@ function clustering()
         collect(175:178),
         collect(179:183),
         collect(184:189),
-        collect(190:194),
-        collect(195:198),
-        collect(199:200),
-        [201, 202, 203],
+        collect(190:195),
+        collect(196:199),
+        collect(200:203),
         collect(204:209),
         collect(210:215),
         collect(216:220),
@@ -93,7 +91,10 @@ function clustering()
         collect(227:233),
         collect(234:241),
         collect(242:245),
-        collect(246:250)
+        collect(246:250),
+        collect(251:256),
+        collect(257:261),
+        collect(262:267)
     ]
     erreur_moy=zeros(nbr_groupe,nbr_algo)
        
@@ -151,7 +152,7 @@ function clustering()
             ###########OPTIONS##################################################
             init="sspa"
             maxiter=100000
-            timelimit=10
+            timelimit=40
             epsi=10e-7
 
             temps_execution[indice,1] += @elapsed begin
@@ -259,7 +260,30 @@ close(fichier)
    
 end 
 
-clustering()
+# clustering()
+
+groupe=[
+       
+        collect(18:20),
+        collect(200:203),
+        collect(41:44),
+        collect(94:97),
+        collect(49:53)
+    ]
+picture_select= [item for sublist in groupe for item in sublist]
+Ag=A[:,picture_select]
+indices_melanges = shuffle(1:size(Ag, 2))
+Person=Ag[:,indices_melanges]
+
+matrice_img=affichage(Person,5,19,19,1)
+file_name="CBCL_5.png"
+save(file_name,matrice_img)
+# file_path = "dataset/CBCL.mat"
+# mat = matread(file_path)
+# A = mat["X"]
+# matrice_img=affichage(A[:,241:270],10,19,19,1)
+
+
 
 
 

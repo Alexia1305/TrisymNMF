@@ -341,7 +341,6 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
     erreur_prec = calcul_erreur(X, W, S)
    
     erreur = erreur_prec
-    
     for itter in 1:maxiter
         # Calculer le temps écoulé
         temps_ecoule = time() - debut
@@ -433,17 +432,19 @@ function symTriONMF_update_rules(X, r, maxiter,epsi,init_alg="k_means",time_limi
         S = 0.5 * (matrice_aleatoire + transpose(matrice_aleatoire))
     end 
     if init_alg=="k_means" 
+        # initialisation kmeans 
         n = size(X, 1)
-        # initialisation kmeans 
-        # initialisation kmeans 
-       
         Xnorm = similar(X, Float64)
         # Pour chaque colonne de X
         for i in 1:n
             # Calcul de la norme euclidienne de la colonne
             col_norm = norm(X[:, i],2)
             # Division de la colonne par sa norme
-            Xnorm[:, i] = X[:, i] / col_norm
+            if col_norm !=0
+                Xnorm[:, i] = X[:, i] / col_norm
+            else
+                Xnorm[:, i] = X[:, i] 
+            end 
         end
         R=kmeans(Xnorm,r,maxiter=Int(1000))
        

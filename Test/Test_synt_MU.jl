@@ -16,7 +16,7 @@ result2=zeros(length(epsilon), 4)
 for level in 1:nbr_level
     r=rin
     println(level)
-    nbr_test=100
+    nbr_test=10
     accuracy_moy=0
     accuracy_moy2=0
     time1=0

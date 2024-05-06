@@ -1,7 +1,7 @@
 using MAT
 using Statistics
 using Plots
-file_path = "dataset/Swimmer.mat"
+
 include("../algo/algo_symTriONMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
@@ -13,39 +13,14 @@ using Plots # Charger le package Plots pour les tracés
 using LinearAlgebra
 
 using GraphPlot
+include("affichage.jl")
+Random.seed!(123)
 
-function affichage(W::Matrix{Float64})
-    # Dimensions des images individuelles
-    largeur, hauteur = 11, 20
-    # Nombre d'images dans W
-    nb_images = size(W, 2)
-    # Créer une image combinée
-    image_combinee = zeros(Gray, hauteur, largeur * nb_images)
-
-    # Redimensionner et combiner les images générées par les colonnes de W
-    for i in 1:nb_images
-        # Remettre la colonne de W en matrice 20x28
-        image_colonne = reshape(W[:, i], hauteur, largeur)
-
-        # Normaliser les valeurs entre 0 et 1
-        image_colonne .= (image_colonne .- minimum(image_colonne)) / (maximum(image_colonne) - minimum(image_colonne))
-
-        # Inverser l'image
-        image_colonne .= abs.(1 .- image_colonne)
-
-        # Ajouter l'image à l'image combinée
-        image_combinee[:, (i - 1) * largeur + 1:i * largeur] .= image_colonne
-    end
-
-    # Afficher l'image combinée
-    return image_combinee
-end
 
 function test()
     
-    # Fixer la seed à une valeur spécifique, par exemple 123
-    Random.seed!(123)
-    # Charger le fichier karate.mat
+    # Charger le fichier k
+    file_path = "dataset/Swimmer.mat"
     mat = matread(file_path)
     A = mat["X"]
     X=A*A'
@@ -59,7 +34,7 @@ function test()
     maxiter=10000
     timelimit=5
     epsi=10e-7
-    nbr_tests=20
+    nbr_tests=2
     nbr_algo=3
     min_erreur= 1
     Wb=zeros(n,r)
@@ -79,7 +54,7 @@ function test()
         erreurs[1,i] = erreur
 
         temps_execution[2,i] = @elapsed begin
-            W, H, erreur = alternatingONMF(X, r, maxiter, epsi, "k_means")
+            W, H, erreur = alternatingONMF(X, r, maxiter, epsi, "sspa")
         end
         erreurs[2,i] = erreur
 
@@ -101,7 +76,7 @@ function test()
 
         println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
     
-        println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_erreurs[j, 1]/100)," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]/100)," %")
+        println("l'erreur % pour la méthode ", methods[j], " : ",  moyenne_erreurs[j, 1]/100," +_  ",@sprintf("%.3g", ecart_type_erreurs[j, 1]/100)," %")
     end   
     # Création du graphique
 
@@ -136,23 +111,11 @@ function test()
 end 
 
 Wb,Sb=test()
-display(affichage(Wb))
+matrice_img=affichage(Wb,9,20,11,1)
+file_name="swim18.png"
+save(file_name,matrice_img)
 variables = Dict("W" => Wb, "S" => Sb)
 
 # Enregistrer le fichier .mat
 matwrite("WSwimmer.mat", variables)
-# club1 = findall(W[:, 1] .> 0)
-                
-# club2 = findall(W[:, 2] .> 0)
 
-# # Créer un dictionnaire contenant la matrice W
-# variables = Dict("W" => W)
-
-# # Enregistrer le fichier .mat
-# matwrite("W.mat", variables)
-# # Créer un dictionnaire contenant la matrice W
-# variableS= Dict("S" => S)
-
-
-# # Enregistrer le fichier .mat
-# matwrite("S.mat", variableS)
