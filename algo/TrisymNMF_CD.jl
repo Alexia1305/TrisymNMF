@@ -181,16 +181,12 @@ function UpdateS(X,W,S,lambda)
             ind_l = findall(W[:, l] .> 0)
             for i in ind_k
                 for j in ind_l
-                    WSWT[i,j]-=W[i,k]*S[k,l]*W[j,l]
-                    if i in ind_l && j in ind_k 
-                        a += (W[i, k] * W[j, l]+W[j,k]*W[i,l])^2
-                        WSWT[i,j]-=W[i,l]*S[l,k]*W[j,k]
-                        b += 2 * (W[i, k] * W[j, l]+W[j,k]*W[i,l])*(WSWT[i,j]-X[i,j])
-                    else 
-                        a += (W[i, k] * W[j, l])^2
-                        b += 2 * W[i, k] * W[j, l]*(WSWT[i,j]-X[i,j])
-                    end
-                   
+                    WSWT[i,j]-=(W[i,k]*W[j,l]+W[i,l]*W[j,k])*S[k,l]
+                    
+                    a += (W[i, k] * W[j, l]+W[j,k]*W[i,l])^2
+                
+                    b += 2 * (W[i, k] * W[j, l]+W[j,k]*W[i,l])*(WSWT[i,j]-X[i,j])
+                
                     
                     c += (X[i,j]-WSWT[i,j])^2
                     
@@ -205,10 +201,7 @@ function UpdateS(X,W,S,lambda)
             S[l,k]=S[k,l]
             for i in ind_k
                 for j in ind_l
-                    WSWT[i,j]+=W[i,k]*S[k,l]*W[j,l]
-                    if i in ind_l && j in ind_k 
-                        WSWT[i,j]+=W[i,l]*S[l,k]*W[j,k]
-                    end 
+                    WSWT[i,j]+=(W[i,k]*W[j,l]+W[i,l]*W[j,k])*S[k,l]
                 end 
             end 
             println("update S")
@@ -273,9 +266,9 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
     return W, S, erreur
 end
 W1=[8 0 0; 0 10 0; 0 9 0; 0 0 15]
-S1=[1 0.5 0;0.5 1 0;0 0 1]
+S1=[1 0 0;0 1 0;0 0 1]
 X=W1*S1*W1'
-lambda=0.1
+lambda=0.3
 maxiter=1000
 epsi=1e-2
 r=3
