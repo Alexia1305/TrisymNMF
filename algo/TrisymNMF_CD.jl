@@ -107,6 +107,7 @@ function calcul_erreur(X, W, S,lambda) # non relative
 end
 
 function UpdateW(X,W,S,lambda)
+    
     n,r=size(W)
     SWT=S*W'
     WSWT=W*SWT
@@ -116,9 +117,11 @@ function UpdateW(X,W,S,lambda)
         for i in 1:n
             # retire l'ancienne valeur dans les pré calculs
             sumW[i]-=W[i,p]
-            WSWT[i,:].-=W[i,p]*(SWT[p,:])
+            indices_sauf_i = filter(x -> x != i, 1:n)
+            WSWT[i,indices_sauf_i].-=W[i,p]*(SWT[p,indices_sauf_i])
             WSWT[:,i].=WSWT[i,:]
             SWT[:,i].-=S[:,p]*W[i,p]'
+            WSWT[i,i]-=2*SWT[p,i]*W[i,p]+W[i,p]^2*S[p,p]
            
            
             C=0
@@ -140,11 +143,12 @@ function UpdateW(X,W,S,lambda)
 
             a=S[p,p]^2
             b=4*A*S[p,p]
-            c=A*A^2+2*S[p,p]*(B-X[i,i])+2*E
+            c=4*A^2+2*S[p,p]*(B-X[i,i])+2*E
             d=4*A*(B-X[i,i])+4*C+2*lambda*(sumW[i])
-            e=X[i,i]^2+(X[i,i]-B)^2+2*D
+            e=(X[i,i]-B)^2+2*D
 
             W[i,p]=minimize_degre4(a,b,c,d,e)
+
 
 
         
@@ -152,10 +156,13 @@ function UpdateW(X,W,S,lambda)
 
             # mise à jour des pré calculs :
             sumW[i]+=W[i,p]
+            WSWT[i,i]+=2*SWT[p,i]*W[i,p]+W[i,p]^2*S[p,p]
             SWT[:,i].+=S[:,p]*W[i,p]'
-            WSWT[i,:].+=W[i,p]*(SWT[p,:])
+            WSWT[i,indices_sauf_i].+=W[i,p]*(SWT[p,indices_sauf_i])
             WSWT[:,i].=WSWT[i,:]
 
+            println("update W")
+            println(calcul_erreur(X, W, S,lambda))
 
         end 
     end
@@ -170,13 +177,21 @@ function UpdateS(X,W,S,lambda)
             a = 0
             b = 0
             c=0
-            ind_i = findall(W[:, k] .> 0)
-            ind_j = findall(W[:, l] .> 0)
-            for i in ind_i
-                for j in ind_j
+            ind_k = findall(W[:, k] .> 0)
+            ind_l = findall(W[:, l] .> 0)
+            for i in ind_k
+                for j in ind_l
                     WSWT[i,j]-=W[i,k]*S[k,l]*W[j,l]
-                    a += (W[i, k] * W[j, l])^2
-                    b += 2 * W[i, k] * W[j, l]*(WSWT[i,j]-X[i,j])
+                    if i in ind_l && j in ind_k 
+                        a += (W[i, k] * W[j, l]+W[j,k]*W[i,l])^2
+                        WSWT[i,j]-=W[i,l]*S[l,k]*W[j,k]
+                        b += 2 * (W[i, k] * W[j, l]+W[j,k]*W[i,l])*(WSWT[i,j]-X[i,j])
+                    else 
+                        a += (W[i, k] * W[j, l])^2
+                        b += 2 * W[i, k] * W[j, l]*(WSWT[i,j]-X[i,j])
+                    end
+                   
+                    
                     c += (X[i,j]-WSWT[i,j])^2
                     
                 end
@@ -187,11 +202,17 @@ function UpdateS(X,W,S,lambda)
             else 
                 S[k, l] = min(max(-b / (2a), 0),1)
             end 
-            for i in ind_i
-                for j in ind_j
+            S[l,k]=S[k,l]
+            for i in ind_k
+                for j in ind_l
                     WSWT[i,j]+=W[i,k]*S[k,l]*W[j,l]
+                    if i in ind_l && j in ind_k 
+                        WSWT[i,j]+=W[i,l]*S[l,k]*W[j,k]
+                    end 
                 end 
             end 
+            println("update S")
+            println(calcul_erreur(X, W, S,lambda))
 
         end
     end
@@ -231,9 +252,10 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
         end
         
         W=UpdateW(X,W,S,lambda)
+        println("update W")
         println(calcul_erreur(X, W, S,lambda))
         S=UpdateS(X,W,S,lambda)
-
+        println("update S")
         erreur_prec = erreur
         erreur = calcul_erreur(X, W, S,lambda)
         println(erreur)
@@ -253,9 +275,9 @@ end
 W1=[8 0 0; 0 10 0; 0 9 0; 0 0 15]
 S1=[1 0.5 0;0.5 1 0;0 0 1]
 X=W1*S1*W1'
-lambda=0.4
+lambda=0.1
 maxiter=1000
-epsi=1e-5
+epsi=1e-2
 r=3
 W, S, erreur=TrisymNMF_CD(X, r,lambda, maxiter,epsi)
 println(W)
