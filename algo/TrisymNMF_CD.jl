@@ -291,12 +291,18 @@ end
 
 function scale_S(W,S)
     Sd = copy(S)
+    n,r=size(W)
     D = Matrix{Float64}(I, r, r) # Crée une matrice identité r x r
     p = 1
     
     while p == 1 || (minimum(maximum(Sd)) < 0.9999 && p <= 100)
         for i = 1:r
-            d = 1 / max(sqrt(Sd[i, i]), maximum(Sd[i, [1:i-1; i+1:r]]))
+            max_i= max(sqrt(Sd[i, i]), maximum(Sd[i, [1:i-1; i+1:r]]))
+            if max_i ==0
+                d=1
+            else 
+                d = 1 / max_i
+            end 
             Sd[i, :] *= d
             Sd[:, i] *= d
             D[i, i] *= d
@@ -351,10 +357,10 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
         S = 0.5 * (matrice_aleatoire + transpose(matrice_aleatoire))
 
     end 
-    
+    lambda=lambda*norm(X-W*S*W',2)
     erreur_prec = calcul_erreur(X, W, S,lambda)
     erreur = erreur_prec
-    println(erreur)
+    
     for itter in 1:maxiter
         # Calculer le temps écoulé
         temps_ecoule = time() - debut
@@ -371,7 +377,7 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
         W=UpdateW2(X,W,S,lambda)
         
         S=UpdateS(X,W,S,lambda)
-       
+        W,S=scale_S(W,S)
         erreur_prec = erreur
         erreur = calcul_erreur(X, W, S,lambda)
        
@@ -388,25 +394,3 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
     
     return W, S, erreur
 end
-r=5
-n=20
-W1 = rand(n, r)
-
-# Création de la matrice S symétrique avec des éléments entre 0 et 1
-S1 = rand(r, r)
-
-# Rendre S symétrique
-S1 = S1 + S1'
-
-
-X=W1*S1*W1'
-lambda=0.3
-maxiter=1000
-epsi=1e-2
-r=3
-W, S, erreur=TrisymNMF_CD(X, r,lambda, maxiter,epsi,"sspa")
-
-println(norm(X-W*S*W')/norm(X))
-W, S, erreur=TrisymNMF_CD(X, r,lambda, maxiter,epsi,"random")
-
-println(norm(X-W*S*W')/norm(X))

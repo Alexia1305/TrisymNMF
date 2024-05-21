@@ -7,18 +7,58 @@ using LinearAlgebra
 using GraphPlot
 using Images
 
+using Statistics
+
 include("../algo/algo_symTriONMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 include("affichage.jl")
 Random.seed!(123)
 
+function calculate_eigenvalue_distribution(n::Int, nbr_tests::Int)
+    eigenvalue_distribution = Float64[]
 
+    for i in 1:nbr_tests
+        # creation matrice random
+        X=rand(n,n)
+        for i in 1:n
+            for j in 1:n
+                if j<i 
+                    X[j,i]=X[i,j]
+                end 
+            end
+        end 
+        # Calculer les valeurs propres
+        eigvals_X=eigen(X).values
+        eigenvalues = real(eigvals_X[abs.(imag.(eigvals_X)) .< 1e-20])
+
+        # Ajouter les valeurs propres à la distribution
+        append!(eigenvalue_distribution, eigenvalues)
+    end
+
+    return eigenvalue_distribution
+end
+
+function calcul_v()
+    
+
+
+
+    # Paramètres
+    matrix_size = 200
+    nbr_tests = 2000
+
+    # Calculer la distribution des valeurs propres
+    distribution = calculate_eigenvalue_distribution(matrix_size, nbr_tests)
+
+    histogram(distribution, bins=30, xlabel="Eigenvalue", ylabel="Frequency", title="Eigenvalue Distribution")
+
+end 
 
 function test()
-    r=90
+    r=50
     n=200
-    nbr_tests=50
+    nbr_tests=100
 
     
     ###########OPTIONS##################################################
@@ -37,13 +77,14 @@ function test()
     erreurs = zeros(nbr_algo,nbr_tests)
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
+        print(i)
 
         # creation matrice random
         X=rand(n,n)
-        for i in 1:r
-            for j in 1:r 
-                if j<i 
-                    X[j,i]=X[i,j]
+        for k in 1:n
+            for l in 1:n
+                if l<k
+                    X[k,l]=X[l,k]
                 end 
             end
         end 
@@ -60,10 +101,10 @@ function test()
         end
         erreurs[2,i] = erreur
 
-        # temps_execution[3,i] = @elapsed begin
-        #     A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
-        # end
-        # erreurs[3,i] = erreur
+        temps_execution[3,i] = @elapsed begin
+            A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
+        end
+        erreurs[3,i] = erreur
         temps_execution[4,i] = @elapsed begin
             W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
         end
@@ -114,4 +155,5 @@ function test()
 end 
 # # Créer un dictionnaire contenant la matrice W
 test()
+# calcul_v()
 

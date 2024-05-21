@@ -1,14 +1,12 @@
 using MAT
 using LinearAlgebra
 using Plots
-mat = matread("WSwimmer.mat")
+mat = matread("St.mat")
 X = mat["S"]
-for i in 1:18
-    X[i,i]=0
-end
+println(X)
 
 # Afficher la heatmap
 grayscale_palette = cgrad([:white, :black])
 heatmap(X, color=grayscale_palette,
-        xticks=(1:18, 1:18), yticks=(1:18, 1:18))
-savefig("heatmap_swim.png")
+        xticks=(1:15, 1:15), yticks=(1:15, 1:15))
+savefig("heatmap_TDT2_TRi.png")

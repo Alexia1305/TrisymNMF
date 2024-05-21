@@ -9,6 +9,7 @@ Random.seed!(123)
 include("../algo/algo_symTriONMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
+include("../algo/TrisymNMF_CD.jl")
 
 
 
@@ -17,7 +18,7 @@ function test(X)
     X=Matrix(X)
 
     ###########OPTIONS##################################################
-    r =12
+    r =15
     init="sspa"
     maxiter=10000
     timelimit=40
@@ -100,14 +101,16 @@ function test(X)
     savefig(scatter_plot_erreurs, "TDT2_erreur.png")
     return Wb,Sb
 end 
+
 # Charger le fichier karate.mat
 file_path = "dataset/subsampleTDT2.mat"
 mat = matread(file_path)
 X = mat["Xkl"]
 words=mat["wordsK"]
 Wb,Sb=test(X)
+r=15
 classement = Vector{Vector{Any}}(undef, r)  # Crée un vecteur de r listes vides
-r=12
+
 # Initialisation des listes vides
 for i in 1:r
     club = findall(Wb[:, i] .> 0)
