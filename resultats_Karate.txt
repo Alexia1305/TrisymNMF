@@ -1,9 +1,0 @@
-Paramètres :
-maxiter = 10000
-timelimit = 5
-epsi = 1.0e-6
-init = sspa
-nbr_tests = 20
-
-Moyennes des temps d'exécution :
-["symTriONMF", "ONMF", "SymNMF"]

@@ -11,6 +11,7 @@ Random.seed!(1313)
 
 include("ONMF.jl")
 include("SSPA.jl")
+include("symNMF.jl")
 
 
 function fourth_degree_polynomial(a, b, c, d,e,x)
@@ -111,6 +112,12 @@ function calcul_erreur(X, W, S,lambda) # non relative
     return result
 end
 
+function calcul_erreur_rel(X, W, S) # non relative 
+    
+    result = norm(X - W * S * W')/norm(X)
+    
+    return result
+end
 function UpdateW(X,W,S,lambda)
     
     n,r=size(W)
@@ -248,42 +255,53 @@ function UpdateW2(X,W,S,lambda)
 end 
 
 function UpdateS(X,W,S,lambda)
+    n,r=size(W)
     WSWT=W*S*W'
+    erreur=calcul_erreur(X,W,S)
+    erreur_prec=erreur
     for k = 1:r
         for l = 1:r
-            # supression de l'élément 
-            a = 0
-            b = 0
-            c=0
-            ind_k = findall(W[:, k] .> 0)
-            ind_l = findall(W[:, l] .> 0)
-            for i in ind_k
-                for j in ind_l
-                    WSWT[i,j]-=(W[i,k]*W[j,l]+W[i,l]*W[j,k])*S[k,l]
+            if l<=k
+                val_prec=S[k,l]
+                # supression de l'élément 
+                a = 0
+                b = 0
+                c=0
+                ind_k = findall(W[:, k] .> 0)
+                ind_l = findall(W[:, l] .> 0)
+                for i in ind_k
+                    for j in ind_l
+                        WSWT[i,j]-=((W[i,k]*W[j,l]+W[i,l]*W[j,k])*S[k,l])
+                        
+                        a += (W[i, k] * W[j, l]+W[j,k]*W[i,l])^2
                     
-                    a += (W[i, k] * W[j, l]+W[j,k]*W[i,l])^2
-                
-                    b += 2 * (W[i, k] * W[j, l]+W[j,k]*W[i,l])*(WSWT[i,j]-X[i,j])
-                
+                        b += 2 * (W[i, k] * W[j, l]+W[j,k]*W[i,l])*(WSWT[i,j]-X[i,j])
                     
-                    c += (X[i,j]-WSWT[i,j])^2
-                    
+                        
+                        c += (X[i,j]-WSWT[i,j])^2
+                        
+                    end
                 end
-            end
-            #mise à jour des pre calculs 
-            if a ==0
-                S[k,l]=0
-            else 
-                S[k, l] = min(max(-b / (2a), 0),1)
-            end 
-            S[l,k]=S[k,l]
-            for i in ind_k
-                for j in ind_l
-                    WSWT[i,j]+=(W[i,k]*W[j,l]+W[i,l]*W[j,k])*S[k,l]
+                #mise à jour des pre calculs 
+                if a ==0
+                    S[k,l]=0
+                else 
+                    S[k, l] = min(max(-b / (2a), 0),1)
                 end 
-            end 
-           
-
+                erreur=calcul_erreur(X,W,S) 
+                if erreur_prec<erreur # parfois bruit numérique (solution très proche )
+                    S[k,l]=val_prec
+                    erreur=erreur_prec
+                end 
+                erreur_prec=erreur
+                S[l,k]=S[k,l]
+                for i in ind_k
+                    for j in ind_l
+                        WSWT[i,j]+=(W[i,k]*W[j,l]+W[i,l]*W[j,k])*S[k,l]
+                    end 
+                end 
+            end
+            
         end
     end
     return S
@@ -347,6 +365,28 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
 
 
     end 
+    if init_algo=="sspa dense"
+        n = size(X, 1)
+        p=max(2,Int(floor(0.1*n/r)))
+        options = Dict(:average => 1) # Définissez les options avec lra = 1
+        W,K=SSPA(X, r, p, options)
+        WtW=W'*W 
+        WtWinv=inv(WtW)
+        S=WtWinv*W'*X*W*WtWinv
+        S=max.(S,0)
+        #scaling optimal
+       
+        alpha=sum(sum(S.^2))/sum(sum(S.*(WtW*S*WtW)))
+        S=S*alpha
+        W,S=scale_S(W,S)
+
+    end 
+    if init_algo=="symNMF"
+        A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=time_limit, tol=epsi, A_init="sspa")
+        W=A
+        S= Matrix{Float64}(I, r, r)
+        
+    end 
     if init_algo=="random"
         # initialisation aléatoire
         n = size(X, 1)
@@ -377,7 +417,9 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
         W=UpdateW2(X,W,S,lambda)
         
         S=UpdateS(X,W,S,lambda)
-        W,S=scale_S(W,S)
+        if lambda>0
+            W,S=scale_S(W,S)
+        end 
         erreur_prec = erreur
         erreur = calcul_erreur(X, W, S,lambda)
        
@@ -390,7 +432,8 @@ function TrisymNMF_CD(X, r,lambda, maxiter,epsi,init_algo="random",time_limit=20
     end
 
     
-    erreur = calcul_erreur(X, W, S,lambda)
+    erreur_rel = calcul_erreur_rel(X, W, S)
     
-    return W, S, erreur
+    return W, S, erreur_rel
 end
+

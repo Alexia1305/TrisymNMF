@@ -34,43 +34,43 @@ end
 r=2
 init="sspa"
 maxiter=10000
-timelimit=5
+timelimit=30
 epsi=10e-7
 nbr_tests=20
 nbr_algo=3
 
 
-# # Tests 
-# temps_execution = zeros(nbr_algo)
-# erreurs = zeros(nbr_algo)
+# Tests 
+temps_execution = zeros(nbr_algo)
+erreurs = zeros(nbr_algo)
 
-# temps_execution[1] = @elapsed begin
-#     W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
-# end
-# erreurs[1] = erreur
+temps_execution[1] = @elapsed begin
+    W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+end
+erreurs[1] = erreur
 
-# temps_execution[2] = @elapsed begin
-#     W_O, H, erreur = alternatingONMF(X, r, maxiter, epsi, init)
-# end
-# erreurs[2] = erreur
+temps_execution[2] = @elapsed begin
+    W_O, H, erreur = alternatingONMF(X, r, maxiter, epsi, init)
+end
+erreurs[2] = erreur
 
-# temps_execution[3] = @elapsed begin
-#     A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
-# end
-# erreurs[3] = erreur
+temps_execution[3] = @elapsed begin
+    A, erreur = SymNMF(X, r; max_iter=maxiter, max_time=timelimit, tol=epsi, A_init=init)
+end
+erreurs[3] = erreur
 
 
-# # Calcul de la moyenne et de l'écart type des temps et des erreurs
+# Calcul de la moyenne et de l'écart type des temps et des erreurs
 
-# methods = ["symTriONMF", "ONMF", "SymNMF"]
+methods = ["symTriONMF", "ONMF", "SymNMF"]
 
-# # Affichage des résultats
-# for j in 1:nbr_algo
+# Affichage des résultats
+for j in 1:nbr_algo
 
-#     println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.5g", temps_execution[j])," secondes")
+    println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.5g", temps_execution[j])," secondes")
     
-#     println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.5g", erreurs[j]*100),"  %")
-# end   
+    println("l'erreur % pour la méthode ", methods[j], " : ", @sprintf("%.5g", erreurs[j]*100),"  %")
+end   
 
 
 
@@ -120,17 +120,50 @@ nbr_algo=3
 # variables=Dict("W"=>W_O,"H"=>H)
 # matwrite("Karate_O.mat",variables)
 
-lambdas=collect(0:0.1:1)
+lambdas=[0.04]
 for lambda in lambdas
     temps_execution  = @elapsed begin
         W, S, erreur  =TrisymNMF_CD(X, r,lambda, maxiter,epsi,init,timelimit)
     end
+    println("lambda ",lambda)
     println(temps_execution," sec")
-    prinln(erreur, " %")
+    println("erreur ",norm(X-W*S*W',2)/norm(X,2), " %")
+    
     club1 = findall(W[:, 1] .> 0)
                     
     club2 = findall(W[:, 2] .> 0)
+    # Convertir les listes en ensembles
+    set1 = Set(club1)
+    set2 = Set(club2)
+
+    # Trouver l'intersection des deux ensembles
+    intersection = intersect(set1, set2)
     println("classement par trisymNMF")
     println("club1: ",club1)
     println("club2: ",club2)
+
+    # Compter le nombre d'éléments en commun
+    println("element en commun", length(intersection))
+    club1=[]
+    club2=[]
+
+    # Parcourir chaque ligne de la matrice
+    for i in 1:size(W, 1)
+        # Trouver l'indice de l'élément le plus grand dans la ligne actuelle
+        a = argmax(W[i, :])
+        if a==1
+            push!(club1,i)
+        else 
+            push!(club2,i)
+        end
+    end
+    println("soft clustering ")
+    println("club1: ",club1)
+    println("club2: ",club2)
+    # Créer un dictionnaire contenant la matrice W
+    variables = Dict("W" => W, "S" => S)
+
+    # Enregistrer le fichier .mat
+    matwrite("Karate_TS_$lambda.mat", variables)
+    println()
 end 

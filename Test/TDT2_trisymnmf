@@ -18,13 +18,13 @@ function test(X)
     X=Matrix(X)
 
     ###########OPTIONS##################################################
-    r =15
+    r =20
     init="sspa"
     maxiter=10000
     timelimit=80
     epsi=10e-7
     nbr_algo=1
-    lambda= [0.0195]
+    lambda= [0]
     nbr_tests=length(lambda)
     # Initialisation des tableaux pour stocker les temps et les erreurs
     n=size(X)[1]
@@ -70,48 +70,48 @@ words=mat["wordsK"]
 Wb,Sb=test(X)
 n,r=size(Wb)
 
-classement = Vector{Vector{Any}}(undef, r)  # Crée un vecteur de r listes vides
+# classement = Vector{Vector{Any}}(undef, r)  # Crée un vecteur de r listes vides
 
-# Initialisation des listes vides
-for i in 1:r
-    club = findall(Wb[:, i] .> 0)
-    classement[i] = words[club]
-    println("classement",i)
-    println("┌───────┐")
-    for str in classement[i]
-        println("│ ", str, " │")
-    end
-    println("└───────┘")
-    println("10 éléments les plus importants ")
-    # Obtenir les indices qui trieraient le vecteur dans l'ordre décroissant
-    indices_tries = sortperm(Wb[:,i], rev=true)
+# # Initialisation des listes vides
+# for i in 1:r
+#     club = findall(Wb[:, i] .> 0)
+#     classement[i] = words[club]
+#     println("classement",i)
+#     println("┌───────┐")
+#     for str in classement[i]
+#         println("│ ", str, " │")
+#     end
+#     println("└───────┘")
+#     println("10 éléments les plus importants ")
+#     # Obtenir les indices qui trieraient le vecteur dans l'ordre décroissant
+#     indices_tries = sortperm(Wb[:,i], rev=true)
 
-    # Prendre les 110 derniers indices
-    indices_10_plus_grands = indices_tries[1:8]
-    println(words[indices_10_plus_grands])
+#     # Prendre les 110 derniers indices
+#     indices_10_plus_grands = indices_tries[1:8]
+#     println(words[indices_10_plus_grands])
 
-end
-for i in 1:n
-    club = findall(Wb[i, :] .> 0)
-    if length(club)>1
-        println(words[i]," class : ",club)
-    end 
-end 
+# end
+# for i in 1:n
+#     club = findall(Wb[i, :] .> 0)
+#     if length(club)>1
+#         println(words[i]," class : ",club)
+#     end 
+# end 
 
-grayscale_palette = cgrad([:white, :black])
-heatmap(Sb, color=grayscale_palette, xlabel="X Axis Label", ylabel="Y Axis Label", title="Heatmap Title",
-        xticks=(1:r, 1:r), yticks=(1:r, 1:r))
-savefig("heatmap.png")
-
-
-# Créer un dictionnaire contenant la matrice W
-variables = Dict("W" => Wb)
-
-# Enregistrer le fichier .mat
-matwrite("Wt.mat", variables)
-# Créer un dictionnaire contenant la matrice W
-variableS= Dict("S" => Sb)
+# grayscale_palette = cgrad([:white, :black])
+# heatmap(Sb, color=grayscale_palette, xlabel="X Axis Label", ylabel="Y Axis Label", title="Heatmap Title",
+#         xticks=(1:r, 1:r), yticks=(1:r, 1:r))
+# savefig("heatmap.png")
 
 
-# Enregistrer le fichier .mat
-matwrite("St.mat", variableS)
+# # Créer un dictionnaire contenant la matrice W
+# variables = Dict("W" => Wb)
+
+# # Enregistrer le fichier .mat
+# matwrite("Wt.mat", variables)
+# # Créer un dictionnaire contenant la matrice W
+# variableS= Dict("S" => Sb)
+
+
+# # Enregistrer le fichier .mat
+# matwrite("St.mat", variableS)
