@@ -2,7 +2,7 @@ using MAT
 using Statistics
 using Plots
 
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 
@@ -45,7 +45,7 @@ function test()
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi, "k_means", timelimit)
+            W, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi, "k_means", timelimit)
             if erreur<min_erreur
                 Wb=W
                 Sb=S

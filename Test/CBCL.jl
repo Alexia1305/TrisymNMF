@@ -7,7 +7,7 @@ using LinearAlgebra
 using GraphPlot
 using Images
 
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 include("affichage.jl")
@@ -40,7 +40,7 @@ function test()
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            Wb, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[1,i] = erreur
 
@@ -54,7 +54,7 @@ function test()
         end
         erreurs[3,i] = erreur
         temps_execution[4,i] = @elapsed begin
-            W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
+            W,S, erreur = OtrisymNMF_MU(X, r, maxiter, epsi, init,timelimit)
         end
         erreurs[4,i] = erreur
     end

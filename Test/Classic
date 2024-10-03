@@ -4,7 +4,7 @@ using LightGraphs # Charger le package LightGraphs pour manipuler les graphes
 using Plots # Charger le package Plots pour les tracés
 using LinearAlgebra
 using GraphPlot
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 function test(X)
@@ -32,7 +32,7 @@ function test(X)
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            Wb, Sb, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            Wb, Sb, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[1,i] = erreur
 
@@ -46,7 +46,7 @@ function test(X)
         #  end
         #  erreurs[3,i] = erreur
         #  temps_execution[4,i] = @elapsed begin
-        #      W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
+        #      W,S, erreur = OtrisymNMF_MU(X, r, maxiter, epsi, init,timelimit)
         #  end
         #  erreurs[4,i] = erreur
     end

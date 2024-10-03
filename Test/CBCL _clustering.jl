@@ -9,7 +9,7 @@ using Images
 using ColorSchemes
 
 
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 include("affichage.jl")
@@ -156,14 +156,14 @@ function clustering()
             epsi=10e-7
 
             temps_execution[indice,1] += @elapsed begin
-                W, S, erreur= symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+                W, S, erreur= OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
             end
             erreur_moy[indice,1] +=erreur
             println("1")
             push!(label_CD,[findfirst(x -> x != 0, ligne) for ligne in eachrow(W)])
             
             temps_execution[indice,2] += @elapsed begin
-                W2, S2, erreur = symTriONMF_update_rules(X, r, maxiter, epsi,init)
+                W2, S2, erreur = OtrisymNMF_MU(X, r, maxiter, epsi,init)
             end
             erreur_moy[indice,2] +=erreur
             println("2")

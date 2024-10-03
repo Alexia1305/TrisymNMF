@@ -6,7 +6,7 @@ using LinearAlgebra
 using GraphPlot
 using Random
 Random.seed!(123)
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 include("../algo/TrisymNMF_CD.jl")

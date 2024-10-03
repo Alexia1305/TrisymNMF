@@ -9,7 +9,7 @@ using LinearAlgebra
 using GraphPlot
 include("../algo/TrisymNMF_CD.jl")
 
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 
@@ -45,7 +45,7 @@ temps_execution = zeros(nbr_algo)
 erreurs = zeros(nbr_algo)
 
 temps_execution[1] = @elapsed begin
-    W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+    W, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
 end
 erreurs[1] = erreur
 

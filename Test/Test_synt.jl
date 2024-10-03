@@ -1,4 +1,4 @@
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 using DelimitedFiles
 using Plots
 using LaTeXStrings
@@ -58,18 +58,18 @@ for dim in 1:length(dim_n)
         epsi=10e-5
         # algorithme :
         temps_execution_1 = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"random")
+            W, S, erreur = OtrisymNMF_CD(X, r, maxiter,epsi,"random")
         end
         temps_execution_2 = @elapsed begin
-            W2, S2, erreur2 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"k_means")
+            W2, S2, erreur2 = OtrisymNMF_CD(X, r, maxiter,epsi,"k_means")
         end 
         if nbr_algo>=3
             temps_execution_3 = @elapsed begin
-                W3, S3, erreur3 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
+                W3, S3, erreur3 = OtrisymNMF_CD(X, r, maxiter,epsi,"sspa")
             end 
         end 
         temps_execution_4 = @elapsed begin
-            W4, S4, erreur4 = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"spa")
+            W4, S4, erreur4 = OtrisymNMF_CD(X, r, maxiter,epsi,"spa")
         end 
         accu1=calcul_accuracy(W_true,W)
         accu2=calcul_accuracy(W_true,W2)

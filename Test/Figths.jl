@@ -1,4 +1,4 @@
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 using DelimitedFiles
 using Plots
 gr()  # Configurer le backend GR
@@ -44,7 +44,7 @@ for test in 1:nbr_test
     timelimit=50
     
     times[test,1] = @elapsed begin
-        Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,"k_means", timelimit)
+        Wb, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,"k_means", timelimit)
     end
     println(erreur)
     println(S)
@@ -60,7 +60,7 @@ for test in 1:nbr_test
     end
     errors[test,3] = erreur
     times[test,4]= @elapsed begin
-        W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
+        W,S, erreur = OtrisymNMF_MU(X, r, maxiter, epsi, init,timelimit)
     end
     errors[test,4] = erreur
 end

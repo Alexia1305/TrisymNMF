@@ -1,4 +1,4 @@
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 using DelimitedFiles
 using Plots
 gr()  # Configurer le backend GR
@@ -70,10 +70,10 @@ for level in 1:nbr_level
         epsi=10e-5
         # algorithme :
         temps_execution_1 = @elapsed begin
-            W, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter,epsi,"sspa")
+            W, S, erreur = OtrisymNMF_CD(X, r, maxiter,epsi,"sspa")
         end
         temps_execution_2 = @elapsed begin
-            W2, S2, erreur2 = symTriONMF_update_rules(X, r, maxiter,epsi,"sspa")
+            W2, S2, erreur2 = OtrisymNMF_MU(X, r, maxiter,epsi,"sspa")
         end
         
         

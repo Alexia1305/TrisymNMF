@@ -9,7 +9,7 @@ using Images
 
 using Statistics
 
-include("../algo/algo_symTriONMF.jl")
+include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
 include("../algo/TrisymNMF_CD.jl")
@@ -93,7 +93,7 @@ function test()
         # println(eigvals_X[abs.(imag.(eigvals_X)) .< 1e-10])
 
         temps_execution[1,i] = @elapsed begin
-            Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            Wb, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[1,i] = erreur
 
@@ -107,7 +107,7 @@ function test()
         end
         erreurs[3,i] = erreur
         temps_execution[4,i] = @elapsed begin
-            W,S, erreur = symTriONMF_update_rules(X, r, maxiter, epsi, init,timelimit)
+            W,S, erreur = OtrisymNMF_MU(X, r, maxiter, epsi, init,timelimit)
         end
         erreurs[4,i] = erreur
     end
@@ -201,7 +201,7 @@ function test_symvstri_sparse(r)
         end 
         
         temps_execution[3,i] = @elapsed begin
-            Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            Wb, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[3,i] = erreur
         
@@ -297,7 +297,7 @@ function test_symvstri_defpos(r)
         end 
         
         temps_execution[3,i] = @elapsed begin
-            Wb, S, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            Wb, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[3,i] = erreur
         
@@ -343,7 +343,7 @@ function test_symvstri_defpos(r)
     
 end 
 # # Créer un dictionnaire contenant la matrice W
-liste_r=[100]
+liste_r=[10,20]
 for r in liste_r
     test_symvstri_sparse(r)
 end 

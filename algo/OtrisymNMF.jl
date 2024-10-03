@@ -228,7 +228,7 @@ end
 #     return sum(L_true .== Lmap) / length(L_true)
 # end 
 
-function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",time_limit=5)
+function OtrisymNMF_CD(X, r, maxiter,epsi,init_algo="k_means",time_limit=5)
     debut = time()
     if init_algo=="random"
         # initialisation aléatoire
@@ -413,7 +413,7 @@ function symTriONMF_coordinate_descent(X, r, maxiter,epsi,init_algo="k_means",ti
     return W, S, erreur
 end
 
-function symTriONMF_update_rules(X, r, maxiter,epsi,init_alg="k_means",time_limit=5)
+function OtrisymNMF_MU(X, r, maxiter,epsi,init_alg="k_means",time_limit=5)
 
     #Orthogonal Nonnegative Matrix Tri-factorizations for Clustering
      # Initialiser le temps de début
