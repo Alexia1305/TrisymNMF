@@ -4,7 +4,7 @@ using Colors
 using Plots
 include("../algo/OtrisymNMF.jl")
 include("Bi_modularity.jl")
-
+include("affiche.jl")
 A = [
     1 1 1 1 1 1 0 1 1 0 0 0 0 0;
     1 1 1 0 1 1 1 1 0 0 0 0 0 0;
@@ -161,6 +161,6 @@ labels = collect(1:nv(g))  # Numérote les noeuds de 1 à n
 annotations = [(x_positions[i], y_positions[i] - 0.10, string(labels[i])) for i in 1:nv(g)]  # Décaler les étiquettes
 # Afficher le graphe
 scatter!(x_positions, y_positions, annotations=annotations, ms=0,label="", annotationfontsize=8)  # Ajouter les labels
-
+affiche(S,"S_Southern_woman_2")
 
 
