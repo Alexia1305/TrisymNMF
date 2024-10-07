@@ -3,6 +3,7 @@ using GraphPlot
 using Colors
 using Plots
 include("../algo/OtrisymNMF.jl")
+include("Bi_modularity.jl")
 
 A = [
     1 1 1 1 1 1 0 1 1 0 0 0 0 0;
@@ -63,14 +64,45 @@ node_classes=zeros(n)
 for i in 1:n
     node_classes[i]=findall(W[i, :] .> 0)[1]
 end 
+delta=zeros(n,n)
+for k in 1:r
+
+    groups_of_2 = collect(combinations(findall(W[:,k] .> 0), 2))
+    for (i,j) in groups_of_2
+         delta[i,j] =1
+    end 
+end 
+println(BI_Modularity(X,delta))
 
 # AFFICHAGE 
 
 
 # Création du graphe à partir de la matrice d'adjacence
 g = SimpleGraph(X)
-# Calculer les positions
-pos = spring_layout(g)
+# # Calculer les positions
+# Trouver les nœuds appartenant à chaque classe
+unique_classes = unique(node_classes)  # Trouver les classes uniques
+class_groups = [findall(x -> x == c, node_classes) for c in unique_classes]  # Grouper les nœuds par classe
+
+# Assigner des positions aléatoires par cluster
+cluster_radius = 0.2  # Rayon pour positionner les nœuds dans le même cluster
+cluster_centers = [(cos(2*pi*i/length(unique_classes)), sin(2*pi*i/length(unique_classes))) for i in 1:length(unique_classes)]  # Centres des clusters autour d'un cercle
+
+# Fonction pour générer des positions proches autour d'un centre de cluster
+function generate_cluster_positions(center, num_nodes, radius)
+    θ = LinRange(0, 2*pi, num_nodes+1)[1:end-1]  # Angles également espacés
+    [(center[1] + radius * cos(θ[i]), center[2] + radius * sin(θ[i])) for i in 1:num_nodes]
+end
+# Générer les positions des nœuds par classe
+pos = Dict()
+for (i, class_group) in enumerate(class_groups)
+    cluster_center = cluster_centers[i]
+    cluster_positions = generate_cluster_positions(cluster_center, length(class_group), cluster_radius)
+    for (j, node) in enumerate(class_group)
+        pos[node] = cluster_positions[j]
+    end
+end
+# pos = spring_layout(g)
 # Créer une figure
 plot()
 
@@ -99,9 +131,9 @@ gplot(g,
 
 # Tracer les arêtes
 for e in edges(g)
-    x = [pos[1][src(e)], pos[1][dst(e)]]  # Coordonnées X des arêtes
-    y = [pos[2][src(e)], pos[2][dst(e)]]  # Coordonnées Y des arêtes
-    plot!(x, y, color=:gray,label="")
+    x = [pos[src(e)][1], pos[dst(e)][1]]  # Coordonnées X des arêtes
+    y = [pos[src(e)][2], pos[dst(e)][2]]  # Coordonnées Y des arêtes
+    plot!(x, y, color=:gray,label="", axis=false,grid=false)
 end
 
 # Tracer les nœuds avec différentes formes
@@ -114,11 +146,21 @@ for i in 1:nv(g)
     node_classes[i] == 6 ? :rect :
     node_classes[i] == 7 ? :cross : :rect # Différentes formes
 
-    scatter!([pos[1][i]], [pos[2][i]], marker=shape, label="", color=node_colors[i], markersize=8)
+    scatter!([pos[i][1]], [pos[i][2]], marker=shape, label="", color=node_colors[i], markersize=8)
 end
 
+# # Ajouter une légende
+# scatter!(1, 1, label="Women", color=:red, ms=10, leg=:topright)
+# scatter!(2, 1, label="Events", color=:blue, ms=10)
+# Extraire les coordonnées des positions
+x_positions = [pos[i][1] for i in 1:nv(g)]
+y_positions = [pos[i][2] for i in 1:nv(g)]
+
+# Créer les annotations (étiquettes des noeuds, positionnées légèrement en dessous)
+labels = collect(1:nv(g))  # Numérote les noeuds de 1 à n
+annotations = [(x_positions[i], y_positions[i] - 0.10, string(labels[i])) for i in 1:nv(g)]  # Décaler les étiquettes
 # Afficher le graphe
-xlabel!("X")
-ylabel!("Y")
-title!("Graph with Different Node Shapes")
+scatter!(x_positions, y_positions, annotations=annotations, ms=0,label="", annotationfontsize=8)  # Ajouter les labels
+
+
 
