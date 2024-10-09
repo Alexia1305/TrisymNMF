@@ -1,4 +1,4 @@
-
+using Graphs
 function Modularity(A,partition)
     n,_=size(A)
     m = count(x -> x != 0, A)/2
@@ -20,8 +20,8 @@ function Modularity(A,partition)
 end
 function confusion_matrix(A, B)
     # Trouver les labels uniques dans chaque partition
-    A_labels = length(unique(A))
-    B_labels = length(unique(B))
+    A_labels = unique(A)
+    B_labels = unique(B)
 
     # Initialiser la matrice de confusion
     M = zeros(Int, length(A_labels), length(B_labels))
@@ -49,11 +49,16 @@ function normalised_mutual_info(A,B)
     Mi= sum(M, dims=2)  # Somme des lignes (clusters de A)
     Mj = sum(M, dims=1)  # Somme des colonnes (clusters de B)
     for i in 1:ca
-        
-        sum2+=Mi[i]*log(Mi[i]/n)
+        if Mi[i]>0
+            sum2+=Mi[i]*log(Mi[i]/n)
+        end 
         for j in 1:cb 
-            sum1+=-2*M[i,j]*log(M[i,j]*n/(Mi[i]*Mj[j]))
-            sum3+=Mj[j]*log(Mj[j]/n)
+            if M[i,j]>0
+                sum1+=-2*M[i,j]*log(M[i,j]*n/(Mi[i]*Mj[j]))
+            end
+            if Mj[j]>0
+                sum3+=Mj[j]*log(Mj[j]/n)
+            end 
         end 
     end 
     

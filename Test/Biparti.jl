@@ -3,7 +3,7 @@ using GraphPlot
 using Colors
 using Plots
 include("../algo/OtrisymNMF.jl")
-include("Bi_modularity.jl")
+include("tools_CD.jl")
 include("affiche.jl")
 A = [
     1 1 1 1 1 1 0 1 1 0 0 0 0 0;

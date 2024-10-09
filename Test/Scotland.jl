@@ -6,71 +6,94 @@ include("affiche.jl")
  # Remplace LightGraphs par Graphs
 
 using Colors
-using LightGraphs 
+using Graphs 
 using Plots
-function test_Scotland()
+
+function algo_CD(X,algo,r)
+   
+    maxiter=10000
+    timelimit=60
+    epsi=10e-7
+    if algo =="OtrisymNMF"
+        init="sspa"
+        temps_execution = @elapsed begin
+            W, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
+        end
+        club1 = findall(W[:, 1] .> 0)
+        club2= findall(W[:, 2] .> 0)
+        n,r=size(W)
+        partition=zeros(n)
+        for i in 1:n
+            
+            # Trouver l'indice de la colonne où l'élément est non nul
+            partition[i] = findfirst(x -> x != 0, W[i, :])
+        end
+    elseif algo == "kmeans"
+        # initialisation kmeans 
+        n = size(X, 1)
+        Xnorm = similar(X, Float64)
+        # Pour chaque colonne de X
+        for i in 1:n
+            # Calcul de la norme euclidienne de la colonne
+            col_norm = norm(X[:, i],2)
+            # Division de la colonne par sa norme
+            if col_norm !=0
+                Xnorm[:, i] = X[:, i] / col_norm
+            else
+                Xnorm[:, i] = X[:, i] 
+            end 
+        end
+        R=kmeans(Xnorm,r,maxiter=maxiter)
+        partition = assignments(R)
+        
+    
+
+    end
+    return partition
+
+end 
+
+function test_Scotland(algo,r)
     # Lire le fichier .net et obtenir le graphe
-    g = read_pajek("dataset/Scotland.net")
+    g,labels = read_pajek("dataset/Scotland.net")
 
    
 
     # Récupérer la matrice d'adjacence
     X = float(Matrix(adjacency_matrix(g)))
-
-    r=2
-    init="sspa"
-    maxiter=10000
-    timelimit=60
-    epsi=10e-7
-
-    temps_execution = @elapsed begin
-        W, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
-    end
-    club1 = findall(W[:, 1] .> 0)
-    club2= findall(W[:, 2] .> 0)
+    partition=algo_CD(X,algo,r)
+    club1 = findall(partition .==1)
+    club2= findall(partition.==2)
     println(size(club1))
     println(size(club2))
-    println("number of edges inter communities",count(x -> x != 0, X[club1,club1])+count(x -> x != 0, X[club2,club2]))
-    n,r=size(W)
-    partition=zeros(n)
-    for i in 1:n
-        # Trouver l'indice de la colonne où l'élément est non nul
-        partition[i] = findfirst(x -> x != 0, W[i, :])
-    end
-    println("modularity",Modularity(X,partition))
+    println("number of edges insides communities",count(x -> x != 0, X[club1,club1])+count(x -> x != 0, X[club2,club2]))
+   
+    
+    println("modularity",modularity(g,Int.(partition)))
 end 
-function Dolphins()
+
+function Dolphins(algo,r)
 
     g,labels = read_pajek("dataset/dolphins.net")
     # Récupérer la matrice d'adjacence
     X = float(Matrix(adjacency_matrix(g)))
 
-    r=2
-    init="sspa"
-    maxiter=10000
-    timelimit=60
-    epsi=10e-7
-
-    temps_execution = @elapsed begin
-        W, S, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
-    end
-    club1 = findall(W[:, 1] .> 0)
-    club2= findall(W[:, 2] .> 0)
+   
+    partition=algo_CD(X,algo,r)
+    club1 = findall(partition .==1)
+    club2= findall(partition.==2)
+    
     println(size(club1))
     println(size(club2))
     println("number of edges out communities :",count(x -> x != 0, X[club1,club2]))
-    n,r=size(W)
-    partition=zeros(n)
-    for i in 1:n
-        # Trouver l'indice de la colonne où l'élément est non nul
-        partition[i] = findfirst(x -> x != 0, W[i, :])
-    end
+    
+    n,_=size(X)
     println("modularity: ",Modularity(X,partition))
     True_partition=ones(n)
     for i in [61,33,57,23,6,10,7,32,14,18,26,49,58,43,55,28,27,2,20,8]
         True_partition[i]=2
     end 
-    println("Inorm : ",normalised_mutual_info(True_partition,partition))
+    println("Inorm : ",normalised_mutual_info(Int.(True_partition),partition))
     # Définir les couleurs en fonction des classes
     # Par exemple, classe 1 => bleu, classe 2 => rouge
     nodecolor = [colorant"lightseagreen", colorant"orange"]
@@ -109,11 +132,12 @@ function Dolphins()
     scatter!(x_positions, y_positions, annotations=annotations, ms=0,label="", annotationfontsize=6)  # Ajouter les labels
     # Afficher le graphe
     display(p)
-    affiche(S,"S_dolphins")
+    #affiche(S,"S_dolphins")
 
 
 
 
 end
+r=2
 
-Dolphins()
+Dolphins("kmeans",r)
