@@ -573,4 +573,3 @@ function OtrisymNMF_MU(X, r, maxiter,epsi,init_alg="k_means",time_limit=5)
       
     return W, S, erreur2
 end
-

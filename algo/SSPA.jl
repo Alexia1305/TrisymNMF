@@ -64,6 +64,7 @@ function SSPA(X, r, p, options)
     
     V = []
     normX2 = sum(X.^2, dims=1)
+    normX2=Float64.(normX2)
     W = zeros(size(Z, 1), r)
     K = zeros(Int, r, p)
     
