@@ -9,7 +9,7 @@ Random.seed!(123)
 include("../algo/OtrisymNMF.jl")
 include("../algo/ONMF.jl")
 include("../algo/symNMF.jl")
-include("../algo/TrisymNMF_CD.jl")
+
 
 
 
@@ -36,7 +36,7 @@ function test(X)
     # Boucle pour effectuer les tests
     for i in 1:nbr_tests
         temps_execution[1,i] = @elapsed begin
-            Wb, Sb, erreur = symTriONMF_coordinate_descent(X, r, maxiter, epsi,init, timelimit)
+            Wb, Sb, erreur = OtrisymNMF_CD(X, r, maxiter, epsi,init, timelimit)
         end
         erreurs[1,i] = erreur
 
@@ -61,7 +61,7 @@ function test(X)
     moyenne_erreurs = mean(erreurs, dims=2)
     ecart_type_erreurs = std(erreurs, dims=2)
     # Création du graphique
-    methods = ["symTriONMF", "ONMF", "SymNMF","MU"]
+    methods = ["OtrisymNMF", "ONMF", "SymNMF","MU"]
     # Affichage des résultats
     for j in 1:nbr_algo
         println("Temps d'exécution pour la méthode ", methods[j], " : ", @sprintf("%.3g", moyenne_temps[j, 1])," +_ ", @sprintf("%.3g", ecart_type_temps[j, 1]), " secondes")
