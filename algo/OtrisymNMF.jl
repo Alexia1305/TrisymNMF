@@ -573,3 +573,13 @@ function OtrisymNMF_MU(X, r, maxiter,epsi,init_alg="k_means",time_limit=5)
       
     return W, S, erreur2
 end
+X = [
+    1.0000    0         0         0.5000;
+    0         1.0000    1.0000    0.2000;
+    0         1.0000    1.0000    0.2000;
+    0.5000    0.2000    0.2000    1.0000
+]
+
+W,S,erreur=OtrisymNMF_CD(X, 3, 3000,0.000001,"sspa")
+println(W)
+println(S)
