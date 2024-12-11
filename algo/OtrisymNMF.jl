@@ -9,13 +9,7 @@ include("septrisymNMF.jl")
 include("SSPA.jl")
 include("ONMF.jl")
 
-function svds(A, k)
-    U, Σ, V = svd(A)
-    Uk = U[:, 1:k]
-    Σk = Diagonal(Σ[1:k])
-    Vk = V[:, 1:k]
-    return Uk, Σk, Vk
-end
+
 
 function roots_third_degree(a, b, c, d)
     
@@ -91,68 +85,6 @@ function min_degre4J(a,b,c)
     end 
     return sol,min
 end 
-function min_degre4(a, b, c)
-    # minimum du polynome de degré 4 ax^4 + bx^2 + cx
-    # car pas 0 
-    min = 1
-    sol = a+b+c
-    if a == 0
-        x = -c / (2 * b)
-        value = a * (x ^ 4) + b * (x ^ 2) + c * x
-        if x > 0 && value < min
-            sol = x
-            min = value
-        end
-        return sol, min
-    end
-
-    # méthode de cardan
-    p = 2 * b / (4 * a)
-    q = c / (4 * a)
-    
-    delta = -(4 * (p ^ 3) + 27 * (q ^ 2))
-
-    if delta < 0
-        x = cbrt((-q + sqrt(-delta / 27)) / 2) + cbrt((-q - sqrt(-delta / 27)) / 2)
-        value = a * (x ^ 4) + b * (x ^ 2) + c * x
-        if x > 0 && value < min
-            sol = x
-            min = value
-        end
-    elseif delta == 0
-        if p == q && q == 0
-            x = 0
-            value = 0
-        else
-            x = 3 * q / p
-            value = a * (x ^ 4) + b * (x ^ 2) + c * x
-            if x > 0 && value < min
-                sol = x
-                min = value
-            end
-            x = -3 * q / (2 * p)
-            value = a * (x ^ 4) + b * (x ^ 2) + c * x
-            if x > 0 && value < min
-                sol = x
-                min = value
-            end
-        end
-    else
-        for k in 0:2
-            x = 2 * sqrt(-p / 3) * cos(
-                (1 / 3) * acos((3 * q / (2 * p)) * ((3 / -p) ^ (1 / 2))) + (2 * k * π / 3)
-            )
-            value = a * (x ^ 4) + b * (x ^ 2) + c * x
-            if x > 0 && value < min
-                sol = x
-                min = value
-            end
-        end
-    end
-    return sol, min
-end
-
-
 
 function calcul_erreur(X, W, S)
    
@@ -186,47 +118,6 @@ function calcul_accuracy(W_true,W_find)
     return float(maxi)
 
 end 
-# function bestMap(L1, L2)
-#     L1 = vec(L1)
-#     L2 = vec(L2)
-#     if length(L1) != length(L2)
-#         error("size(L1) must == size(L2)")
-#     end
-
-#     Label1 = sort(unique(L1))
-#     nClass1 = length(Label1)
-#     Label2 = sort(unique(L2))
-   
-#     nClass2 = length(Label2)
-
-#     nClass = max(nClass1, nClass2)
-#     G = zeros(Int, nClass, nClass)
-    
-#     for i = 1:nClass1
-#         for j = 1:nClass2
-#             G[i, j] = count(x -> L1[x] == Label1[i] && L2[x] == Label2[j], 1:length(L1))
-#         end
-#     end
-   
-#     ass,cost = hungarian(-G)
-#     println(ass)
-#     newL2 = zeros(Int, size(L2))
-#     for i = 1:nClass2
-#         newL2[L2 .== Label2[i]] .= Label1[ass[i]]
-#     end
-#     return newL2
-# end
-
-# function calcul_accuracy2(W_true,W_find)
-#     dim = size(W_true)
-#     n=dim[1]
-#     r=dim[2]
-#     L_true = [findfirst(x -> x != 0, ligne) for ligne in eachrow(W_true)]
-#     L_find = [findfirst(x -> x != 0, ligne) for ligne in eachrow(W_find)]
-#     Lmap = bestMap(L_true,L_find)
-#     println(Lmap)
-#     return sum(L_true .== Lmap) / length(L_true)
-# end 
 
 function OtrisymNMF_CD(X, r, maxiter,epsi,init_algo="k_means",time_limit=5)
     debut = time()
@@ -266,11 +157,7 @@ function OtrisymNMF_CD(X, r, maxiter,epsi,init_algo="k_means",time_limit=5)
         for i in 1:n
             W[i, a[i]] = 1
         end
-        # for i in 1:r
-        #     Ki = findall(W[:, i] .> 0)
-        #     ui, si, vi = svds(X[Ki, Ki],1)
-        #     W[Ki, i] .= abs.(ui) * sqrt(si)
-        # end
+        
         for k in 1:r
             nw=norm(W[:, k],2)
             if nw==0
@@ -573,13 +460,3 @@ function OtrisymNMF_MU(X, r, maxiter,epsi,init_alg="k_means",time_limit=5)
       
     return W, S, erreur2
 end
-X = [
-    1.0000    0         0         0.5000;
-    0         1.0000    1.0000    0.2000;
-    0         1.0000    1.0000    0.2000;
-    0.5000    0.2000    0.2000    1.0000
-]
-
-W,S,erreur=OtrisymNMF_CD(X, 3, 3000,0.000001,"sspa")
-println(W)
-println(S)

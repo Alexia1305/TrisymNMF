@@ -39,8 +39,8 @@ function clustering()
     mat = matread(file_path)
     A = mat["X"]
     nbr_algo=4
-    nbr_test=50
-    groupes=[2,5,10,20,30,40,50]
+    nbr_test=1
+    groupes=[10,20]
     nbr_groupe=length(groupes)
 
 
@@ -129,9 +129,9 @@ function clustering()
             end 
 
 
-            # matrice_img=affichage(Ag,10,19,19,1)
-            # file_name="CBCL_person_$test.png"
-            # save(file_name,matrice_img)
+            matrice_img=affichage(Ag,10,19,19,1)
+            file_name="CBCL_person_$test.png"
+            save(file_name,matrice_img)
 
             # # prepocessing
             # for i in 1: nbr_images
@@ -260,10 +260,12 @@ close(fichier)
    
 end 
 
-# clustering()
-
+#clustering()
+file_path = "dataset/CBCL.mat"
+mat = matread(file_path)
+A = mat["X"]
 groupe=[
-       
+        collect(21:24),
         collect(18:20),
         collect(200:203),
         collect(41:44),
@@ -275,7 +277,7 @@ Ag=A[:,picture_select]
 indices_melanges = shuffle(1:size(Ag, 2))
 Person=Ag[:,indices_melanges]
 
-matrice_img=affichage(Person,5,19,19,1)
+matrice_img=affichage(Person,6,19,19,1)
 file_name="CBCL_5.png"
 save(file_name,matrice_img)
 # file_path = "dataset/CBCL.mat"
